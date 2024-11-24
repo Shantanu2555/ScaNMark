@@ -2,9 +2,11 @@ package com.cdac.scanmark.serviceImplementation;
 
 import com.cdac.scanmark.entities.QRCodes;
 import com.cdac.scanmark.service.QRCodesService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class QRCodesServiceImpl implements QRCodesService {
     @Override
     public List<QRCodes> getAllQRCodes() {

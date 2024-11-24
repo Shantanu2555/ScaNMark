@@ -2,9 +2,10 @@ package com.cdac.scanmark.serviceImplementation;
 
 import com.cdac.scanmark.entities.Lecture;
 import com.cdac.scanmark.service.LectureService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class LectureServiceImpl implements LectureService {
     @Override
     public Lecture createLecture(Lecture lecture) {

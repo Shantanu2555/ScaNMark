@@ -2,9 +2,11 @@ package com.cdac.scanmark.serviceImplementation;
 
 import com.cdac.scanmark.entities.GeoLog;
 import com.cdac.scanmark.service.GeoLogService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+@Service
 public class GeoLogsServiceImpl implements GeoLogService {
     @Override
     public List<GeoLog> getAllGeoLogs() {

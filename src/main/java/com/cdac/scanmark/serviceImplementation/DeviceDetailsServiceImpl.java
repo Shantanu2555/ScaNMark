@@ -2,9 +2,10 @@ package com.cdac.scanmark.serviceImplementation;
 
 import com.cdac.scanmark.entities.DeviceDetails;
 import com.cdac.scanmark.service.DeviceDetailsService;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
-
+@Service
 public class DeviceDetailsServiceImpl implements DeviceDetailsService {
     @Override
     public List<DeviceDetails> getAllDeviceDetails() {
