@@ -4,10 +4,10 @@ import com.cdac.scanmark.entities.Faculty;
 import java.util.List;
 public interface FacultyService {
     List<Faculty> getAllFaculties();
-    Faculty getFacultyById(Long id);
+    Faculty getFacultyByFacultyCode(String code);
     Faculty createFaculty(Faculty faculty);
-    Faculty updateFaculty(Long id, Faculty faculty);
-    void deleteFaculty(Long id);
+    Faculty updateFaculty(String code, Faculty faculty);
+    void deleteFaculty(String code);
 
     List<Faculty> getAllFaculty();
 }

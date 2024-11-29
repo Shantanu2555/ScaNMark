@@ -6,6 +6,7 @@ import com.cdac.scanmark.service.StudentService;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -22,28 +23,31 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Student getStudentById(Long id) {
-        return studentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Student not found with id: " + id));
+    public Student getStudentByPrn(Long prn) {
+        return studentRepository.findByPrn(prn)
+                .orElseThrow(() -> new RuntimeException("Student not found with PRN: " + prn));
     }
 
     @Override
     public Student createStudent(Student student) {
+        if (studentRepository.findByPrn(student.getPrn()).isPresent()) {
+            throw new RuntimeException("Student with PRN already exists: " + student.getPrn());
+        }
         return studentRepository.save(student);
     }
 
     @Override
-    public Student updateStudent(Long id, Student student) {
-        Student existingStudent = getStudentById(id);
-        existingStudent.setPrn(student.getPrn());
-        existingStudent.setName(student.getName());
-        existingStudent.setEmail(student.getEmail());
-        existingStudent.setMacAddress(student.getMacAddress());
+    public Student updateStudent(Long prn, Student updatedStudent) {
+        Student existingStudent = getStudentByPrn(prn);
+        existingStudent.setName(updatedStudent.getName());
+        existingStudent.setEmail(updatedStudent.getEmail());
+        existingStudent.setMacAddress(updatedStudent.getMacAddress());
         return studentRepository.save(existingStudent);
     }
 
     @Override
-    public void deleteStudent(Long id) {
-        studentRepository.deleteById(id);
+    public void deleteStudent(Long prn) {
+        Student student = getStudentByPrn(prn);
+        studentRepository.delete(student);
     }
 }

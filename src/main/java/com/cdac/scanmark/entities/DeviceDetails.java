@@ -1,7 +1,11 @@
 package com.cdac.scanmark.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Getter
+@Setter
 @Entity
 public class DeviceDetails {
     @Id
@@ -9,10 +13,10 @@ public class DeviceDetails {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_prn", nullable = false)
     private Student student;
 
-    @Column(nullable = false)
+    @Column(nullable = false, unique = true)
     private String macAddress;
 
     @Column(nullable = false)
@@ -24,36 +28,5 @@ public class DeviceDetails {
         this.macAddress = macAddress;
         this.deviceName = deviceName;
     }
-
-    public Long getId() {
-        return id;
-    }
-
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    public String getMacAddress() {
-        return macAddress;
-    }
-
-    public void setMacAddress(String macAddress) {
-        this.macAddress = macAddress;
-    }
-
-    public String getDeviceName() {
-        return deviceName;
-    }
-
-    public void setDeviceName(String deviceName) {
-        this.deviceName = deviceName;
-    }
+    public DeviceDetails(){}
 }

@@ -1,7 +1,11 @@
 package com.cdac.scanmark.entities;
 
 import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
 
+@Setter
+@Getter
 @Entity
 public class Attendance {
     @Id
@@ -9,7 +13,7 @@ public class Attendance {
     private Long id;
 
     @ManyToOne
-    @JoinColumn(name = "student_id", nullable = false)
+    @JoinColumn(name = "student_prn", nullable = false)
     private Student student;
 
     @ManyToOne
@@ -26,35 +30,6 @@ public class Attendance {
         this.isPresent = isPresent;
     }
 
-    public Long getId() {
-        return id;
-    }
+    public Attendance(){}
 
-    public void setId(Long id) {
-        this.id = id;
-    }
-
-    public Student getStudent() {
-        return student;
-    }
-
-    public void setStudent(Student student) {
-        this.student = student;
-    }
-
-    public Lecture getLecture() {
-        return lecture;
-    }
-
-    public void setLecture(Lecture lecture) {
-        this.lecture = lecture;
-    }
-
-    public Boolean getPresent() {
-        return isPresent;
-    }
-
-    public void setPresent(Boolean present) {
-        isPresent = present;
-    }
 }
