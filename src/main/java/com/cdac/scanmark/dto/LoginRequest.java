@@ -9,17 +9,15 @@ import org.springframework.stereotype.Service;
 @Getter
 @Setter
 public class LoginRequest {
-    private Long prnOrId;
+    private String email;
     private String password;
-    private String facultyCode ;
     private String role ;
 
     public LoginRequest(){}
 
-    public LoginRequest(Long prnOrId, String password, String facultyCode, String role){
-        this.prnOrId = prnOrId ;
+    public LoginRequest(String email, String password, String role){
+        this.email = email ;
         this.password = password ;
-        this.facultyCode = facultyCode ;
         this.role = role ;
     }
 

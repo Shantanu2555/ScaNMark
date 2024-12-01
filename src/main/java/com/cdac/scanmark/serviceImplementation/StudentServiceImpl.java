@@ -29,6 +29,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Student getStudentByEmail(String email) {
+        return studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found with email: " + email));
+    }
+
+    @Override
     public Student createStudent(Student student) {
         if (studentRepository.findByPrn(student.getPrn()).isPresent()) {
             throw new RuntimeException("Student with PRN already exists: " + student.getPrn());

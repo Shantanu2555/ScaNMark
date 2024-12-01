@@ -1,8 +1,13 @@
 package com.cdac.scanmark.serviceImplementation;
 
+import com.cdac.scanmark.entities.Coordinator;
+import com.cdac.scanmark.entities.Faculty;
 import com.cdac.scanmark.entities.Passwords;
+import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.repository.CoordinatorRepository;
+import com.cdac.scanmark.repository.FacultyRepository;
 import com.cdac.scanmark.repository.PasswordsRepository;
+import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.ForgotPasswordService;
 import com.cdac.scanmark.service.MailSenderService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -11,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Random;
 
 @Service
@@ -25,6 +31,15 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
     @Autowired
     private PasswordEncoder passwordEncoder ;
 
+    @Autowired
+    private PasswordsRepository passwordsRepository ;
+
+    @Autowired
+    private StudentRepository studentRepository ;
+
+    @Autowired
+    private FacultyRepository facultyRepository ;
+
     private static final int OTP_LENGTH = 6;
     private static final long OTP_EXPIRATION_TIME = 300000; // 5 minutes for OTP expiry
 
@@ -33,11 +48,13 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
 
     @Override
     public String forgotPassword(String email) {
-        // Check if the email exists in the Coordinator table
-        if (!coordinatorRepository.existsByEmail(email)) {
+        boolean emailExists = coordinatorRepository.existsByEmail(email) ||
+                studentRepository.existsByEmail(email) ||
+                facultyRepository.existsByEmail(email);
+
+        if (!emailExists) {
             return "Email not found.";
         }
-
         // Generate OTP
         String otp = generateOtp();
 
@@ -66,17 +83,50 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
         }
 
         String hashedNewPassword = passwordEncoder.encode(newPassword);
-        // Update the password
-        Passwords passwordRecord = passwordRepository.findByCoordinatorEmail(email);
-        if (passwordRecord != null) {
-            passwordRecord.setPassword(hashedNewPassword); // Set the new password  hashed
-            passwordRepository.save(passwordRecord);
+
+        // Fetch the corresponding Passwords record based on email (Student, Faculty, or Coordinator)
+        Optional<Passwords> passwordRecord = getPasswordRecordByEmail(email);
+
+        if (passwordRecord.isPresent()) {
+            // Update the password
+            Passwords password = passwordRecord.get();
+            password.setPassword(hashedNewPassword);
+            passwordRepository.save(password);
             otpStorage.remove(email); // Clear OTP after successful password reset
             return "Password updated successfully.";
         } else {
             return "No password record found for this email.";
         }
     }
+
+    // Helper method to fetch the corresponding Passwords record
+    private Optional<Passwords> getPasswordRecordByEmail(String email) {
+        // First, try to find the student by email
+        Optional<Student> studentOptional = studentRepository.findByEmail(email);
+        if (studentOptional.isPresent()) {
+            // Fetch password record using student_prn
+            return passwordRepository.findByStudentPrn(studentOptional.get().getPrn());
+        }
+
+        // If not found, try to find the faculty by email
+        Optional<Faculty> facultyOptional = facultyRepository.findByEmail(email);
+        if (facultyOptional.isPresent()) {
+            // Fetch password record using faculty_code
+            return passwordRepository.findByFacultyFacultyCode(facultyOptional.get().getFacultyCode());
+        }
+
+        // If not found, try to find the coordinator by email
+        Optional<Coordinator> coordinatorOptional = coordinatorRepository.findByEmail(email);
+        if (coordinatorOptional.isPresent()) {
+            // Fetch password record using coordinator_id
+            return passwordRepository.findByCoordinatorId(coordinatorOptional.get().getId());
+        }
+
+        // If none of the entities match, return empty
+        return Optional.empty();
+    }
+
+
 
     // Helper method to generate OTP
     private String generateOtp() {
@@ -121,4 +171,5 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
             return timestamp;
         }
     }
+
 }

@@ -1,28 +1,31 @@
 package com.cdac.scanmark.controller;
 
+import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
 import com.cdac.scanmark.service.CoordinatorService;
 import com.cdac.scanmark.service.ForgotPasswordService;
-import com.cdac.scanmark.serviceImplementation.AuthService;
+import com.cdac.scanmark.entities.Coordinator ;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/api/coordinators")
 public class CoordinatorController {
-    private final AuthService authService;
+
+    @Autowired
     private final CoordinatorService coordinatorService ;
+    @Autowired
+    private JWTProvider jwtProvider ;
 
     @Autowired
     private ForgotPasswordService forgotPasswordService;
 
-
-    public CoordinatorController(AuthService authService, CoordinatorService coordinatorService) {
-
-        this.authService = authService;
+    public CoordinatorController(CoordinatorService coordinatorService) {
         this.coordinatorService = coordinatorService;
     }
+
 
     @PostMapping("/login")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
@@ -61,17 +64,34 @@ public class CoordinatorController {
         return ResponseEntity.ok(response);
     }
 
-
-
     // Reset Password
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
         String email = resetPasswordRequest.getEmail();
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
+        String role = resetPasswordRequest.getRole() ;
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);
         return ResponseEntity.ok(response);
     }
+
+    // Get Profile (Only authorized users can access their profile)
+    @GetMapping("/profile")
+    public ResponseEntity<CoordinatorProfileResponse> getUserProfile(@RequestHeader("Authorization") String token) {
+        // Extract the email from the JWT token
+        String emailFromToken = jwtProvider.getUsernameFromToken(token.substring(7)); // Remove "Bearer "
+
+        // Fetch user (can be Coordinator, Faculty, or Student)
+        Coordinator coordinator = coordinatorService.getCoordinatorByEmail(emailFromToken);
+
+        // Map to DTO and return
+        CoordinatorProfileResponse response = new CoordinatorProfileResponse();
+        response.setName(coordinator.getName());
+        response.setEmail(coordinator.getEmail());
+
+        return ResponseEntity.ok(response);
+    }
+
 
 
 }

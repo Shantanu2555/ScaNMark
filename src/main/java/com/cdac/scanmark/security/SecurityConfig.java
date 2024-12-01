@@ -13,8 +13,6 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
-import com.cdac.scanmark.security.JwtAuthenticationFilter;
-
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig {
@@ -50,14 +48,20 @@ public class SecurityConfig {
                                 "/api/faculty/login",
                                 "/api/coordinators/verify-otp",
                                 "/api/coordinators/forgot-password",
-                                "/api/coordinators/reset-password").permitAll()  // Allow auth and login endpoints
+                                "/api/coordinators/reset-password",
+                                "/api/students/forgot-password",
+                                "/api/students/reset-password",
+                                "/api/faculty/forgot-password",
+                                "/api/faculty/reset-password").permitAll()  // Allow auth and login endpoints
+                        .requestMatchers("/api/coordinators/profile").hasRole("COORDINATOR")  // Ensure only coordinators can access this endpoint
+                        .requestMatchers("/api/faculty/profile").hasRole("FACULTY")  // Ensure only faculty can access this endpoint
+                        .requestMatchers("/api/students/profile").hasRole("STUDENT")  // Ensure only students can access this endpoint
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     // CORS configuration bean
     @Bean

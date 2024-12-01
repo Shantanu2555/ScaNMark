@@ -49,6 +49,12 @@ public class FacultyServiceImpl implements FacultyService {
     }
 
     @Override
+    public Faculty getFacultyByEmail(String email) {
+        return facultyRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Faculty not found with email: " + email));
+    }
+
+    @Override
     public List<Faculty> getAllFaculty() {
         return facultyRepository.findAll();  // Fetch all faculties
     }

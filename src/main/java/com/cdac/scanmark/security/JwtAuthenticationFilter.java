@@ -1,62 +1,56 @@
-package com.cdac.scanmark.security ;
+package com.cdac.scanmark.security;
+
+import com.cdac.scanmark.util.JwtUtil;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.stereotype.Component;
+import org.springframework.web.filter.OncePerRequestFilter;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 import java.io.IOException;
 import java.util.Collections;
 
-import com.cdac.scanmark.repository.StudentRepository;
-import com.cdac.scanmark.util.JwtUtil;
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
-    private final StudentRepository studentRepository;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, StudentRepository studentRepository) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil) {
         this.jwtUtil = jwtUtil;
-        this.studentRepository = studentRepository;
     }
-
 
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain filterChain)
             throws ServletException, IOException {
-
-        // Skip the filter for /api/auth/login endpoint
-        if (request.getRequestURI().equals("/api/auth/login")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
         String authHeader = request.getHeader("Authorization");
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
             String token = authHeader.substring(7);
-            try {
-                Long prn = Long.valueOf(jwtUtil.extractUsername(token));
+            // Log the token contents
+            logger.debug("Token contents: " + token);
+            String email = jwtUtil.extractUsername(token);
+            String role = jwtUtil.extractRole(token);
 
-                // Verify token and fetch user details
-                studentRepository.findByPrn(prn).ifPresent(student -> {
-                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                            student, null, Collections.emptyList());
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
-                });
+            // Log the extracted role and email
+            logger.debug("Extracted email: " + email + ", Extracted role: " + role);
 
-            } catch (Exception e) {
-                // Invalid token
-                response.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid JWT Token");
-                return;
+            if (email != null && role != null && !role.isEmpty() && SecurityContextHolder.getContext().getAuthentication() == null) {
+                // Validate token without needing user details
+                if (jwtUtil.validateToken(token, email)) {
+                    // Create an authentication token with the extracted role
+                    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                            email, null, Collections.singletonList(new SimpleGrantedAuthority(role)));
+                    SecurityContextHolder.getContext().setAuthentication(authToken);
+                } else {
+                    logger.error("Invalid token for email: " + email);
+                }
+            } else {
+                logger.warn("Invalid token or missing role/email for token: " + token);
             }
         }
-
         filterChain.doFilter(request, response);
     }
 }

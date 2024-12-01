@@ -9,5 +9,7 @@ public interface FacultyService {
     Faculty updateFaculty(String code, Faculty faculty);
     void deleteFaculty(String code);
 
+    Faculty getFacultyByEmail(String email) ;
+
     List<Faculty> getAllFaculty();
 }

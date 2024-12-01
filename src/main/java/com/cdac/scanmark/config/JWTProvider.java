@@ -6,8 +6,12 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
+import java.util.stream.Collectors;
+
+
 
 import java.util.Date;
+import java.util.List;
 
 @Component
 public class JWTProvider {
@@ -18,42 +22,39 @@ public class JWTProvider {
     @Value("${jwt.expiration}")
     private long expirationTime;
 
-    // Generate JWT token
-    // Generate JWT token using Authentication object
-    public String generateToken(Authentication authentication) {
+    // Generate token
+    public String generateToken(String email, String role) {
         return Jwts.builder()
-                .setSubject(authentication.getName())  // Get the username (prn) from the authentication
-                .setIssuedAt(new Date())
-                .setExpiration(new Date(System.currentTimeMillis() + expirationTime))
-                .signWith(SignatureAlgorithm.HS512, secretKey)
-                .compact();
+                .setSubject(email) // Set email as the subject (user identifier)
+                .claim("role", role) // Add role as a claim
+                .setIssuedAt(new Date()) // Set the issue date
+                .setExpiration(new Date(System.currentTimeMillis() + 1000 * 60 * 60)) // Set the expiration (1 hour)
+                .signWith(SignatureAlgorithm.HS512, secretKey) // Sign the token with your secret key
+                .compact(); // Return the compacted JWT token
     }
 
-    // Extract username from token
+
+
+    // Extract email from token
     public String getUsernameFromToken(String token) {
         return extractClaims(token).getSubject();
     }
 
     // Validate token
-    public boolean validateToken(String token, String username) {
-        return username.equals(getUsernameFromToken(token)) && !isTokenExpired(token);
+    public boolean validateToken(String token) {
+        try {
+            extractClaims(token); // If parsing succeeds, token is valid
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
-    // Check if token is expired
-    public boolean isTokenExpired(String token) {
-        return extractExpiration(token).before(new Date());
-    }
-
-    // Extract claims from token
+    // Private helper methods
     private Claims extractClaims(String token) {
         return Jwts.parser()
                 .setSigningKey(secretKey)
                 .parseClaimsJws(token)
                 .getBody();
-    }
-
-    // Extract expiration date from token
-    private Date extractExpiration(String token) {
-        return extractClaims(token).getExpiration();
     }
 }

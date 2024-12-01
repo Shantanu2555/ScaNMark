@@ -27,4 +27,6 @@ public interface CoordinatorService {
     String verifyOtp(OtpVerificationRequest request) ;
 
     JwtResponse signIn(LoginRequest loginRequest) ;
+
+    Coordinator getCoordinatorByEmail(String email);
 }

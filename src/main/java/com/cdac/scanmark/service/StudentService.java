@@ -10,4 +10,6 @@ public interface StudentService {
     void deleteStudent(Long id);
 
     Student getStudentByPrn(Long prn) ;
+
+    Student getStudentByEmail(String email) ;
 }

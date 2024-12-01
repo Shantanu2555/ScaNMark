@@ -99,26 +99,32 @@ public class CoordinatorServiceImpl implements CoordinatorService {
 
     @Override
     public JwtResponse signIn(LoginRequest loginRequest) {
-        Coordinator coordinator = coordinatorRepository.findById(loginRequest.getPrnOrId())
+        String email = loginRequest.getEmail(); // Get email from login request
+
+        // Fetch the coordinator by email
+        Coordinator coordinator = coordinatorRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Coordinator not found"));
 
+        // Check if the coordinator is verified
         if (!coordinator.getIsVerified()) {
             throw new RuntimeException("Coordinator is not verified. Please complete OTP verification.");
         }
 
-        String password = passwordsRepository.findPasswordByCoordinatorId(coordinator.getId())
+        // Fetch the password by coordinator ID
+        String password = passwordsRepository.findByCoordinatorId(coordinator.getId())
+                .map(Passwords::getPassword)
                 .orElseThrow(() -> new RuntimeException("Password not found for coordinator"));
 
+        // Validate password
         if (!passwordEncoder.matches(loginRequest.getPassword(), password)) {
             throw new RuntimeException("Invalid credentials");
         }
 
-        // Generate JWT token
-        String token = jwtProvider.generateToken(new UsernamePasswordAuthenticationToken(
-                loginRequest.getPrnOrId(), null, List.of(new SimpleGrantedAuthority("ROLE_COORDINATOR"))));
+        // Generate JWT token with email as the subject
+        String token = jwtProvider.generateToken(email, "ROLE_COORDINATOR");
 
-        // Create JwtResponse with token and a success message
-        return new JwtResponse(token, "Login successful");  // Return both token and message
+        // Return JwtResponse with token and a success message
+        return new JwtResponse(token, "Login successful");
     }
 
     @Transactional
@@ -144,5 +150,12 @@ public class CoordinatorServiceImpl implements CoordinatorService {
 
         return "Coordinator verified successfully";
     }
+
+    @Override
+    public Coordinator getCoordinatorByEmail(String email) {
+        return coordinatorRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Coordinator not found with email: " + email));
+    }
+
 
 }

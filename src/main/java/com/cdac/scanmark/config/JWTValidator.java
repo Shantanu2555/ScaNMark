@@ -9,9 +9,8 @@ public class JWTValidator {
     @Autowired
     private JWTProvider jwtProvider;
 
-    // Validate token and extract username
-    public boolean isValid(String token, String username) {
-        return jwtProvider.validateToken(token, username);
+    // Validate token
+    public boolean isValid(String token) {
+        return jwtProvider.validateToken(token);
     }
 }
-
