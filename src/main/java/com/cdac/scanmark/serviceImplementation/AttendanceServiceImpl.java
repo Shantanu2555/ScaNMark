@@ -6,6 +6,8 @@ import com.cdac.scanmark.service.AttendanceService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -57,4 +59,17 @@ public class AttendanceServiceImpl implements AttendanceService {
     public List<Attendance> getAttendanceByLecture(Long lectureId) {
         return attendanceRepository.findByLectureId(lectureId);  // Fetch attendance records by lecture ID
     }
+
+    @Override
+    // Method to get attendance for a specific LocalDate
+    public List<Attendance> getAttendanceByDate(LocalDate date) {
+        // Convert LocalDate to LocalDateTime (start of day and end of day)
+        LocalDateTime startOfDay = date.atStartOfDay();
+        LocalDateTime endOfDay = startOfDay.plusDays(1); // 1 day after startOfDay
+
+        // Fetch the attendance records for the given date range
+        return attendanceRepository.findByLectureDateBetween(startOfDay, endOfDay);
+    }
+
+
 }

@@ -2,13 +2,19 @@ package com.cdac.scanmark.controller;
 
 import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
+import com.cdac.scanmark.entities.Attendance;
+import com.cdac.scanmark.exceptions.ResourceNotFoundException;
+import com.cdac.scanmark.service.AttendanceService;
 import com.cdac.scanmark.service.CoordinatorService;
 import com.cdac.scanmark.service.ForgotPasswordService;
 import com.cdac.scanmark.entities.Coordinator ;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+
+import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/coordinators")
@@ -21,6 +27,9 @@ public class CoordinatorController {
 
     @Autowired
     private ForgotPasswordService forgotPasswordService;
+
+    @Autowired
+    private AttendanceService attendanceService ;
 
     public CoordinatorController(CoordinatorService coordinatorService) {
         this.coordinatorService = coordinatorService;
@@ -70,7 +79,6 @@ public class CoordinatorController {
         String email = resetPasswordRequest.getEmail();
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
-        String role = resetPasswordRequest.getRole() ;
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);
         return ResponseEntity.ok(response);
     }
@@ -91,7 +99,19 @@ public class CoordinatorController {
 
         return ResponseEntity.ok(response);
     }
+    @GetMapping("/search-student/{prn}")
+    public ResponseEntity<StudentHistoryResponse> searchStudent(@PathVariable Long prn){
+        StudentHistoryResponse response = coordinatorService.getStudentHistoryByPrn(prn) ;
+        return ResponseEntity.ok(response) ;
+    }
 
-
-
+    @GetMapping("/search-attendance-by-date/{date}")
+    public ResponseEntity<List<Attendance>> getAttendanceByDate(
+            @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
+        List<Attendance> attendanceList = attendanceService.getAttendanceByDate(date);
+        if (attendanceList.isEmpty()) {
+            throw new ResourceNotFoundException("No attendance records found for the given date: " + date);
+        }
+        return ResponseEntity.ok(attendanceList);
+    }
 }

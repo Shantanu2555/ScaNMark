@@ -96,7 +96,6 @@ public class FacultyController {
         String email = resetPasswordRequest.getEmail();
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
-        String role = resetPasswordRequest.getRole() ;
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);
         return ResponseEntity.ok(response);
     }

@@ -1,6 +1,9 @@
 package com.cdac.scanmark.service;
 
 import com.cdac.scanmark.entities.Attendance;
+
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 
@@ -14,4 +17,7 @@ public interface AttendanceService {
     List<Attendance> getAttendanceByStudent(Long studentId);
 
     List<Attendance> getAttendanceByLecture(Long lectureId);
+
+    List<Attendance> getAttendanceByDate(LocalDate date) ;
+
 }

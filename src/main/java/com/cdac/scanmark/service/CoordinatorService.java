@@ -29,4 +29,6 @@ public interface CoordinatorService {
     JwtResponse signIn(LoginRequest loginRequest) ;
 
     Coordinator getCoordinatorByEmail(String email);
+
+    StudentHistoryResponse getStudentHistoryByPrn(Long prn) ;
 }

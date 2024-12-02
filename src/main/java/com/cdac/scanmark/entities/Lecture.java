@@ -15,7 +15,7 @@ public class Lecture {
     private Integer id ;
 
     @Column(nullable = false)
-    private Integer facultyName ;
+    private String facultyName ;
 
     @Column(nullable = false)
     private String subjectName ;
@@ -24,17 +24,17 @@ public class Lecture {
     private LocalDateTime lectureTime ;
 
     @Column(nullable = false)
-    private Long qrcodeReferance ;
+    private String qrcodeReferance ;
 
     public Lecture(){
 
     }
-    public Lecture(Integer id, Integer facultyName, String subjectName, LocalDateTime lectureTime, Long qrcodeReferance) {
+
+    public Lecture(Integer id, String facultyName, String subjectName, LocalDateTime lectureTime, String qrcodeReferance) {
         this.id = id;
         this.facultyName = facultyName;
         this.subjectName = subjectName;
         this.lectureTime = lectureTime;
         this.qrcodeReferance = qrcodeReferance;
     }
-
 }

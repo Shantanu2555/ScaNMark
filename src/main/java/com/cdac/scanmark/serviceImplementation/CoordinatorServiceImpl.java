@@ -2,15 +2,18 @@ package com.cdac.scanmark.serviceImplementation;
 
 import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
+import com.cdac.scanmark.entities.Attendance;
 import com.cdac.scanmark.entities.Coordinator;
 import com.cdac.scanmark.entities.Passwords;
+import com.cdac.scanmark.entities.Student;
+import com.cdac.scanmark.exceptions.ResourceNotFoundException;
+import com.cdac.scanmark.repository.AttendanceRepository;
 import com.cdac.scanmark.repository.CoordinatorRepository;
 import com.cdac.scanmark.repository.PasswordsRepository;
+import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.CoordinatorService;
 import com.cdac.scanmark.service.MailSenderService;
 import jakarta.transaction.Transactional;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -25,13 +28,17 @@ public class CoordinatorServiceImpl implements CoordinatorService {
     private final PasswordsRepository passwordsRepository ;
     private final MailSenderService mailSenderService ;
     private final JWTProvider jwtProvider ;
+    private final StudentRepository studentRepository ;
+    private final AttendanceRepository attendanceRepository ;
 
-    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider) {
+    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider, StudentRepository studentRepository, AttendanceRepository attendanceRepository) {
         this.coordinatorRepository = coordinatorRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
         this.mailSenderService = mailSenderService;
         this.jwtProvider = jwtProvider;
+        this.studentRepository = studentRepository;
+        this.attendanceRepository = attendanceRepository;
     }
 
     @Override
@@ -155,6 +162,16 @@ public class CoordinatorServiceImpl implements CoordinatorService {
     public Coordinator getCoordinatorByEmail(String email) {
         return coordinatorRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Coordinator not found with email: " + email));
+    }
+
+    @Override
+    public StudentHistoryResponse getStudentHistoryByPrn(Long prn) {
+        Student student = studentRepository.findByPrn(prn)
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with prn : " + prn)) ;
+
+        List<Attendance> attendanceList = attendanceRepository.findByStudentPrn(prn);
+
+        return new StudentHistoryResponse(student, attendanceList);
     }
 
 

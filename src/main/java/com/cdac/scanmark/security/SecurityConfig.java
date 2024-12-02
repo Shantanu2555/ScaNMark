@@ -53,7 +53,9 @@ public class SecurityConfig {
                                 "/api/students/reset-password",
                                 "/api/faculty/forgot-password",
                                 "/api/faculty/reset-password").permitAll()  // Allow auth and login endpoints
-                        .requestMatchers("/api/coordinators/profile").hasRole("COORDINATOR")  // Ensure only coordinators can access this endpoint
+                        .requestMatchers("/api/coordinators/profile",
+                                "/api/coordinators/search-student/{prn}",
+                                "/api/coordinators/search-attendance-by-date/{date}").hasRole("COORDINATOR")  // Ensure only coordinators can access this endpoint
                         .requestMatchers("/api/faculty/profile").hasRole("FACULTY")  // Ensure only faculty can access this endpoint
                         .requestMatchers("/api/students/profile").hasRole("STUDENT")  // Ensure only students can access this endpoint
                         .anyRequest().authenticated()  // Secure all other endpoints

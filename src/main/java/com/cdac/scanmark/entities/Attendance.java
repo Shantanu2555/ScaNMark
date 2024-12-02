@@ -4,6 +4,8 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
+
 @Setter
 @Getter
 @Entity
@@ -22,6 +24,9 @@ public class Attendance {
 
     @Column(nullable = false)
     private Boolean isPresent;
+
+    @Column(name = "lecture_date", nullable = false)
+    private LocalDateTime lectureDate;
 
     public Attendance(Long id, Student student, Lecture lecture, Boolean isPresent) {
         this.id = id;
