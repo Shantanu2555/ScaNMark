@@ -14,7 +14,9 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/coordinators")
@@ -134,4 +136,37 @@ public class CoordinatorController {
         Faculty response = facultyService.addFaculty(addFacultyRequest) ;
         return ResponseEntity.ok(response) ;
     }
+
+    @PutMapping("/updateStudent/{prn}")
+    public ResponseEntity<Student> updateStudent(
+            @PathVariable Long prn,
+            @RequestBody UpdateStudentRequest request) {
+        Student updatedStudent = coordinatorService.updateStudent(prn, request);
+        return ResponseEntity.ok(updatedStudent);
+    }
+    @DeleteMapping("/deleteStudent/{prn}")
+    public ResponseEntity<Map<String, String>> deleteStudent(@PathVariable Long prn) {
+        coordinatorService.deleteStudent(prn);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Student deleted successfully");
+        return ResponseEntity.ok(response);
+    }
+
+    @PutMapping("/updateFaculty/{facultyCode}")
+    public ResponseEntity<Faculty> updateFaculty(
+            @PathVariable String facultyCode,
+            @RequestBody UpdateFacultyRequest request) {
+        Faculty updatedFaculty = coordinatorService.updateFaculty(facultyCode, request);
+        return ResponseEntity.ok(updatedFaculty);
+    }
+
+    @DeleteMapping("/deleteFaculty/{facultyCode}")
+    public ResponseEntity<Map<String, String>> deleteFaculty(@PathVariable String facultyCode) {
+        coordinatorService.deleteFaculty(facultyCode);
+        Map<String, String> response = new HashMap<>();
+        response.put("message", "Faculty deleted successfully");
+        return ResponseEntity.ok(response);
+    }
+
+
 }

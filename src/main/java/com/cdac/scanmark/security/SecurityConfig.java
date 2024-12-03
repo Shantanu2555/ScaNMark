@@ -58,7 +58,11 @@ public class SecurityConfig {
                         .requestMatchers("/api/coordinators/profile",
                                 "/api/coordinators/search-student/{prn}",
                                 "/api/coordinators/search-attendance-by-date/{date}",
-                                "/api/coordinators/faculty-history/{facultyCode}").hasRole("COORDINATOR")  // Ensure only coordinators can access this endpoint
+                                "/api/coordinators/faculty-history/{facultyCode}",
+                                "/api/coordinators/updateStudent/{prn}",
+                                "/api/coordinators/deleteStudent/{prn}",
+                                "/api/coordinators/updateFaculty/{facultyCode}",
+                                "/api/coordinators/deleteFaculty/{facultyCode}").hasRole("COORDINATOR")  // Ensure only coordinators can access this endpoint
                         .requestMatchers("/api/faculty/profile").hasRole("FACULTY")  // Ensure only faculty can access this endpoint
                         .requestMatchers("/api/students/profile").hasRole("STUDENT")  // Ensure only students can access this endpoint
                         .anyRequest().authenticated()  // Secure all other endpoints

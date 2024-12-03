@@ -18,6 +18,8 @@ public interface PasswordsRepository extends JpaRepository<Passwords, Long> {
     Optional<Passwords> findByStudentPrn(Long prn);
     Optional<Passwords> findByFacultyFacultyCode(String facultyCode);
     Optional<Passwords> findByCoordinatorId(Long coordinatorId);
+    void deleteByStudentPrn(Long prn) ;
+    void deleteByFacultyFacultyCode(String facultyCode) ;
 
 }
 //public interface PasswordsRepository extends JpaRepository<Passwords, Long> {

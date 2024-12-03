@@ -21,14 +21,18 @@ public class Student {
     @Column(nullable = false)
     private String macAddress ;
 
-    public Student(){
+    @Column(nullable = false)
+    private boolean isVerified ;
 
+    public Student(){
+        isVerified = false ;
     }
     public Student(Long prn, String name, String email, String macAddress) {
         this.prn = prn;
         this.name = name;
         this.email = email;
         this.macAddress = macAddress;
+        isVerified = false ;
     }
 
 }

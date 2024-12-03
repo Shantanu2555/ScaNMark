@@ -7,6 +7,7 @@ import com.cdac.scanmark.exceptions.ResourceNotFoundException;
 import com.cdac.scanmark.repository.*;
 import com.cdac.scanmark.service.CoordinatorService;
 import com.cdac.scanmark.service.MailSenderService;
+import jakarta.persistence.EntityManager;
 import jakarta.transaction.Transactional;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -26,8 +27,9 @@ public class CoordinatorServiceImpl implements CoordinatorService {
     private final AttendanceRepository attendanceRepository ;
     private final FacultyRepository facultyRepository ;
     private final LectureRepository lectureRepository ;
+    private final EntityManager entityManager ;
 
-    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider, StudentRepository studentRepository, AttendanceRepository attendanceRepository, FacultyRepository facultyRepository, LectureRepository lectureRepository) {
+    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider, StudentRepository studentRepository, AttendanceRepository attendanceRepository, FacultyRepository facultyRepository, LectureRepository lectureRepository, EntityManager entityManager) {
         this.coordinatorRepository = coordinatorRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
@@ -37,6 +39,7 @@ public class CoordinatorServiceImpl implements CoordinatorService {
         this.attendanceRepository = attendanceRepository;
         this.facultyRepository = facultyRepository;
         this.lectureRepository = lectureRepository;
+        this.entityManager = entityManager;
     }
 
     @Override
@@ -104,30 +107,25 @@ public class CoordinatorServiceImpl implements CoordinatorService {
 
     @Override
     public JwtResponse signIn(LoginRequest loginRequest) {
+        loginRequest.setRole("coordinator");
         String email = loginRequest.getEmail(); // Get email from login request
-
         // Fetch the coordinator by email
         Coordinator coordinator = coordinatorRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Coordinator not found"));
-
         // Check if the coordinator is verified
         if (!coordinator.getIsVerified()) {
             throw new RuntimeException("Coordinator is not verified. Please complete OTP verification.");
         }
-
         // Fetch the password by coordinator ID
         String password = passwordsRepository.findByCoordinatorId(coordinator.getId())
                 .map(Passwords::getPassword)
                 .orElseThrow(() -> new RuntimeException("Password not found for coordinator"));
-
         // Validate password
         if (!passwordEncoder.matches(loginRequest.getPassword(), password)) {
             throw new RuntimeException("Invalid credentials");
         }
-
         // Generate JWT token with email as the subject
         String token = jwtProvider.generateToken(email, "ROLE_COORDINATOR");
-
         // Return JwtResponse with token and a success message
         return new JwtResponse(token, "Login successful");
     }
@@ -182,5 +180,61 @@ public class CoordinatorServiceImpl implements CoordinatorService {
         return new FacultyLectureHistoryResponse(faculty, lectures);
     }
 
+    @Transactional
+    public Student updateStudent(Long prn, UpdateStudentRequest request) {
+        Student student = studentRepository.findByPrn(prn)
+                .orElseThrow(() -> new RuntimeException("Student not found with PRN: " + prn));
 
+        if (request.getName() != null && !request.getName().isBlank()) {
+            student.setName(request.getName());
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            student.setEmail(request.getEmail());
+            studentRepository.setIsVerifiedFalse(prn);
+            //Refresh student entity to ensure latest data is loaded
+//            student = studentRepository.findByPrn(prn)
+//                    .orElseThrow(() -> new RuntimeException("Student not found after update!"));
+            entityManager.refresh(student);
+        }
+        if (request.getMacAddress() != null && !request.getMacAddress().isBlank()) {
+            student.setMacAddress(request.getMacAddress());
+        }
+        return studentRepository.save(student);
+    }
+    @Transactional
+    public void deleteStudent(Long prn) {
+        if (!studentRepository.existsByPrn(prn)) {
+            throw new RuntimeException("Student not found with PRN: " + prn);
+        }
+        passwordsRepository.deleteByStudentPrn(prn);
+        studentRepository.deleteByPrn(prn);
+    }
+
+    @Transactional
+    public Faculty updateFaculty(String facultyCode, UpdateFacultyRequest request) {
+        Faculty faculty = facultyRepository.findByFacultyCode(facultyCode)
+                .orElseThrow(() -> new RuntimeException("Faculty not found with code: " + facultyCode));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            faculty.setName(request.getName());
+        }
+        if (request.getEmail() != null && !request.getEmail().isBlank()) {
+            faculty.setEmail(request.getEmail());
+            facultyRepository.setIsVerifiedFalse(facultyCode);
+            entityManager.refresh(faculty);
+        }
+        if (request.getDepartment() != null && !request.getDepartment().isBlank()) {
+            faculty.setDepartment(request.getDepartment());
+        }
+        return facultyRepository.save(faculty);
+    }
+
+    @Transactional
+    public void deleteFaculty(String facultyCode) {
+        if (!facultyRepository.existsByFacultyCode(facultyCode)) {
+            throw new RuntimeException("Faculty not found with code: " + facultyCode);
+        }
+        passwordsRepository.deleteByFacultyFacultyCode(facultyCode);
+        facultyRepository.deleteByFacultyCode(facultyCode);
+    }
 }
