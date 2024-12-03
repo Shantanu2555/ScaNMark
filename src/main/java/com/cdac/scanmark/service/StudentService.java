@@ -1,5 +1,6 @@
 package com.cdac.scanmark.service;
 
+import com.cdac.scanmark.dto.AddStudentRequest;
 import com.cdac.scanmark.entities.Student;
 import java.util.List;
 
@@ -12,4 +13,6 @@ public interface StudentService {
     Student getStudentByPrn(Long prn) ;
 
     Student getStudentByEmail(String email) ;
+
+    Student addStudent(AddStudentRequest request) ;
 }

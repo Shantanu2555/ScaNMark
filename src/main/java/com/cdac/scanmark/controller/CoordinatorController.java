@@ -3,10 +3,10 @@ package com.cdac.scanmark.controller;
 import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
 import com.cdac.scanmark.entities.Attendance;
+import com.cdac.scanmark.entities.Faculty;
+import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.exceptions.ResourceNotFoundException;
-import com.cdac.scanmark.service.AttendanceService;
-import com.cdac.scanmark.service.CoordinatorService;
-import com.cdac.scanmark.service.ForgotPasswordService;
+import com.cdac.scanmark.service.*;
 import com.cdac.scanmark.entities.Coordinator ;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
@@ -24,12 +24,14 @@ public class CoordinatorController {
     private final CoordinatorService coordinatorService ;
     @Autowired
     private JWTProvider jwtProvider ;
-
     @Autowired
     private ForgotPasswordService forgotPasswordService;
-
     @Autowired
     private AttendanceService attendanceService ;
+    @Autowired
+    private StudentService studentService ;
+    @Autowired
+    private FacultyService facultyService ;
 
     public CoordinatorController(CoordinatorService coordinatorService) {
         this.coordinatorService = coordinatorService;
@@ -113,5 +115,23 @@ public class CoordinatorController {
             throw new ResourceNotFoundException("No attendance records found for the given date: " + date);
         }
         return ResponseEntity.ok(attendanceList);
+    }
+
+    @GetMapping("/faculty-history/{facultyCode}")
+    public ResponseEntity<FacultyLectureHistoryResponse> getFacultyHistory(@PathVariable String facultyCode) {
+        FacultyLectureHistoryResponse response = coordinatorService.getFacultyHistory(facultyCode);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/add-student")
+    public ResponseEntity<Student> addStudent(@RequestBody AddStudentRequest addStudentRequest){
+        Student response = studentService.addStudent(addStudentRequest) ;
+        return ResponseEntity.ok(response) ;
+    }
+
+    @PostMapping("/add-faculty")
+    public ResponseEntity<Faculty> addFaculty(@RequestBody AddFacultyRequest addFacultyRequest){
+        Faculty response = facultyService.addFaculty(addFacultyRequest) ;
+        return ResponseEntity.ok(response) ;
     }
 }

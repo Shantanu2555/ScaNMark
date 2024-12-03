@@ -100,4 +100,6 @@ public class StudentController {
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);
         return ResponseEntity.ok(response);
     }
+
+
 }

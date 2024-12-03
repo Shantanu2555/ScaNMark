@@ -2,15 +2,9 @@ package com.cdac.scanmark.serviceImplementation;
 
 import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
-import com.cdac.scanmark.entities.Attendance;
-import com.cdac.scanmark.entities.Coordinator;
-import com.cdac.scanmark.entities.Passwords;
-import com.cdac.scanmark.entities.Student;
+import com.cdac.scanmark.entities.*;
 import com.cdac.scanmark.exceptions.ResourceNotFoundException;
-import com.cdac.scanmark.repository.AttendanceRepository;
-import com.cdac.scanmark.repository.CoordinatorRepository;
-import com.cdac.scanmark.repository.PasswordsRepository;
-import com.cdac.scanmark.repository.StudentRepository;
+import com.cdac.scanmark.repository.*;
 import com.cdac.scanmark.service.CoordinatorService;
 import com.cdac.scanmark.service.MailSenderService;
 import jakarta.transaction.Transactional;
@@ -30,8 +24,10 @@ public class CoordinatorServiceImpl implements CoordinatorService {
     private final JWTProvider jwtProvider ;
     private final StudentRepository studentRepository ;
     private final AttendanceRepository attendanceRepository ;
+    private final FacultyRepository facultyRepository ;
+    private final LectureRepository lectureRepository ;
 
-    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider, StudentRepository studentRepository, AttendanceRepository attendanceRepository) {
+    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider, StudentRepository studentRepository, AttendanceRepository attendanceRepository, FacultyRepository facultyRepository, LectureRepository lectureRepository) {
         this.coordinatorRepository = coordinatorRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
@@ -39,6 +35,8 @@ public class CoordinatorServiceImpl implements CoordinatorService {
         this.jwtProvider = jwtProvider;
         this.studentRepository = studentRepository;
         this.attendanceRepository = attendanceRepository;
+        this.facultyRepository = facultyRepository;
+        this.lectureRepository = lectureRepository;
     }
 
     @Override
@@ -172,6 +170,16 @@ public class CoordinatorServiceImpl implements CoordinatorService {
         List<Attendance> attendanceList = attendanceRepository.findByStudentPrn(prn);
 
         return new StudentHistoryResponse(student, attendanceList);
+    }
+
+    @Transactional
+    public FacultyLectureHistoryResponse getFacultyHistory(String facultyCode) {
+        Faculty faculty = facultyRepository.findByFacultyCode(facultyCode)
+                .orElseThrow(() -> new RuntimeException("Faculty not found with code: " + facultyCode));
+
+        List<Lecture> lectures = lectureRepository.findByFacultyCode(faculty.getFacultyCode());
+
+        return new FacultyLectureHistoryResponse(faculty, lectures);
     }
 
 

@@ -1,5 +1,6 @@
 package com.cdac.scanmark.service;
 
+import com.cdac.scanmark.dto.AddFacultyRequest;
 import com.cdac.scanmark.entities.Faculty;
 import java.util.List;
 public interface FacultyService {
@@ -10,6 +11,8 @@ public interface FacultyService {
     void deleteFaculty(String code);
 
     Faculty getFacultyByEmail(String email) ;
+
+    Faculty addFaculty(AddFacultyRequest request) ;
 
     List<Faculty> getAllFaculty();
 }

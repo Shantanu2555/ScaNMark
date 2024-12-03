@@ -26,15 +26,20 @@ public class Lecture {
     @Column(nullable = false)
     private String qrcodeReferance ;
 
+    @ManyToOne(fetch = FetchType.EAGER)
+    @JoinColumn(name = "faculty_code", nullable = false)
+    private Faculty faculty; // Foreign Key mapping to Faculty
+
     public Lecture(){
 
     }
 
-    public Lecture(Integer id, String facultyName, String subjectName, LocalDateTime lectureTime, String qrcodeReferance) {
+    public Lecture(Integer id, String facultyName, String subjectName, LocalDateTime lectureTime, String qrcodeReferance, Faculty faculty) {
         this.id = id;
         this.facultyName = facultyName;
         this.subjectName = subjectName;
         this.lectureTime = lectureTime;
         this.qrcodeReferance = qrcodeReferance;
+        this.faculty = faculty;
     }
 }
