@@ -1,14 +1,24 @@
 package com.cdac.scanmark.serviceImplementation;
 
+import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.AddStudentRequest;
-import com.cdac.scanmark.entities.Passwords;
+import com.cdac.scanmark.dto.JwtResponse;
+import com.cdac.scanmark.dto.LoginRequest;
+import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Student;
+import com.cdac.scanmark.entities.Coordinator;
+import com.cdac.scanmark.entities.Passwords;
 import com.cdac.scanmark.repository.PasswordsRepository;
 import com.cdac.scanmark.repository.StudentRepository;
+import com.cdac.scanmark.service.MailSenderService;
 import com.cdac.scanmark.service.StudentService;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
@@ -17,11 +27,16 @@ public class StudentServiceImpl implements StudentService {
     private final StudentRepository studentRepository;
     private final PasswordEncoder passwordEncoder ;
     private final PasswordsRepository passwordsRepository ;
+    private final JWTProvider jwtProvider ;
+    private final MailSenderService mailSenderService ;
+    
 
-    public StudentServiceImpl(StudentRepository studentRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository) {
+    public StudentServiceImpl(StudentRepository studentRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
+        this.jwtProvider = jwtProvider ;
+        this.mailSenderService = mailSenderService ;
     }
 
     @Override
@@ -85,7 +100,6 @@ public class StudentServiceImpl implements StudentService {
                 .substring(String.valueOf(request.getPrn())
                 .length() - 4); // Last 4 digits of PRN
 
-
         String encodedPassword = passwordEncoder.encode(defaultPassword) ;
 
         // Save Password
@@ -95,5 +109,70 @@ public class StudentServiceImpl implements StudentService {
         passwordsRepository.save(passwordEntry);
 
         return student;
+    }
+
+    @Override
+    public void sendOtp(Student student){
+        // Generate OTP and expiration
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000); // 6-digit OTP
+        student.setOtp(otp);
+        student.setOtpExpiration(LocalDateTime.now().plusMinutes(10)); // OTP valid for 10 minutes
+
+        studentRepository.save(student) ;
+
+        // Send OTP email (logic to be implemented in mail service)
+        mailSenderService.sendOtp(student.getEmail(), otp);
+    }
+
+    @Transactional
+    @Override
+    public String verifyOtp(OtpVerificationRequest request) {
+        // Fetch the Student by ID
+        Student student = studentRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        // Check if the OTP exists and matches
+        if (student.getOtp() == null || !student.getOtp().equals(request.getOtp())) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        // Check if the OTP expiration is valid (i.e., not expired)
+        if (student.getOtpExpiration() == null || student.getOtpExpiration().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired");
+        }
+
+        // Mark coordinator as verified
+        student.setIsVerified(true);
+        student.setOtp(null); // Clear OTP after successful verification
+        student.setOtpExpiration(null); // Clear expiration time
+        studentRepository.save(student);
+
+        return "Student verified successfully";
+    }
+
+    @Override
+    public JwtResponse signIn(LoginRequest loginRequest) {
+        loginRequest.setRole("student");
+        String email = loginRequest.getEmail(); // Get email from login request
+        // Fetch the Student by email
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+        // Check if the Student is verified
+        if (!student.getIsVerified()) {
+            sendOtp(student);
+            return new JwtResponse(null, "Student not verified yet OTP sent please verify");
+        }
+        // Fetch the password by Student prn
+        String password = passwordsRepository.findByStudentPrn(student.getPrn())
+                .map(Passwords::getPassword)
+                .orElseThrow(() -> new RuntimeException("Password not found for Student"));
+        // Validate password
+        if (!passwordEncoder.matches(loginRequest.getPassword(), password)) {
+            throw new RuntimeException("Invalid credentials");
+        }
+        // Generate JWT token with email as the subject
+        String token = jwtProvider.generateToken(email, "ROLE_STUDENT");
+        // Return JwtResponse with token and a success message
+        return new JwtResponse(token, "Login successful");
     }
 }

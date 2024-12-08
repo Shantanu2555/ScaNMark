@@ -1,15 +1,25 @@
 package com.cdac.scanmark.serviceImplementation;
 
+import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.AddFacultyRequest;
+import com.cdac.scanmark.dto.JwtResponse;
+import com.cdac.scanmark.dto.LoginRequest;
+import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Faculty;
 import com.cdac.scanmark.entities.Passwords;
+import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.repository.FacultyRepository;
 import com.cdac.scanmark.repository.PasswordsRepository;
 import com.cdac.scanmark.service.FacultyService;
+import com.cdac.scanmark.service.MailSenderService;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -17,43 +27,48 @@ import java.util.Optional;
 public class FacultyServiceImpl implements FacultyService {
 
     private final FacultyRepository facultyRepository;
-    private final PasswordEncoder passwordEncoder ;
-    private final PasswordsRepository passwordsRepository  ;
+    private final PasswordEncoder passwordEncoder;
+    private final PasswordsRepository passwordsRepository;
+    private final JWTProvider jwtProvider;
+    private final MailSenderService mailSenderService;
 
     @Autowired
-    public FacultyServiceImpl(FacultyRepository facultyRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository) {
+    public FacultyServiceImpl(FacultyRepository facultyRepository, PasswordEncoder passwordEncoder,
+            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService) {
         this.facultyRepository = facultyRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
+        this.jwtProvider = jwtProvider;
+        this.mailSenderService = mailSenderService;
     }
 
     @Override
     public List<Faculty> getAllFaculties() {
-        return facultyRepository.findAll();  // Fetch all faculty members
+        return facultyRepository.findAll(); // Fetch all faculty members
     }
 
     @Override
     public Faculty getFacultyByFacultyCode(String code) {
-        Optional<Faculty> faculty = facultyRepository.findById(code);  // Find faculty by faculty code
+        Optional<Faculty> faculty = facultyRepository.findById(code); // Find faculty by faculty code
         return faculty.orElseThrow(() -> new RuntimeException("Faculty not found with ID: " + code));
     }
 
     @Override
     public Faculty createFaculty(Faculty faculty) {
-        return facultyRepository.save(faculty);  // Save new faculty record
+        return facultyRepository.save(faculty); // Save new faculty record
     }
 
     @Override
     public Faculty updateFaculty(String code, Faculty faculty) {
-        Faculty existingFaculty = getFacultyByFacultyCode(code);  // Fetch existing faculty
-        existingFaculty.setName(faculty.getName());  // Update faculty details
-        return facultyRepository.save(existingFaculty);  // Save updated faculty record
+        Faculty existingFaculty = getFacultyByFacultyCode(code); // Fetch existing faculty
+        existingFaculty.setName(faculty.getName()); // Update faculty details
+        return facultyRepository.save(existingFaculty); // Save updated faculty record
     }
 
     @Override
     public void deleteFaculty(String code) {
-        Faculty faculty = getFacultyByFacultyCode(code);  // Fetch faculty by ID
-        facultyRepository.delete(faculty);  // Delete faculty record
+        Faculty faculty = getFacultyByFacultyCode(code); // Fetch faculty by ID
+        facultyRepository.delete(faculty); // Delete faculty record
     }
 
     @Override
@@ -64,7 +79,7 @@ public class FacultyServiceImpl implements FacultyService {
 
     @Override
     public List<Faculty> getAllFaculty() {
-        return facultyRepository.findAll();  // Fetch all faculties
+        return facultyRepository.findAll(); // Fetch all faculties
     }
 
     @Override
@@ -83,11 +98,12 @@ public class FacultyServiceImpl implements FacultyService {
 
         // Generate default or custom password
         String defaultPassword = (request.getName() == null || request.getName().isBlank())
-                ? "defaultPassword"  // Use a default password when name is missing or blank
-                : request.getName().trim().toLowerCase().substring(0, request.getName().trim().indexOf(" ") == -1 ? request.getName().length() : request.getName().indexOf(" "));
+                ? "defaultPassword" // Use a default password when name is missing or blank
+                : request.getName().trim().toLowerCase().substring(0,
+                        request.getName().trim().indexOf(" ") == -1 ? request.getName().length()
+                                : request.getName().indexOf(" "));
 
-
-        String encodedPassword = passwordEncoder.encode(defaultPassword) ;
+        String encodedPassword = passwordEncoder.encode(defaultPassword);
 
         // Save Password
         Passwords passwordEntry = new Passwords();
@@ -96,5 +112,70 @@ public class FacultyServiceImpl implements FacultyService {
         passwordsRepository.save(passwordEntry);
 
         return faculty;
+    }
+
+    @Override
+    public void sendOtp(Faculty faculty) {
+        // Generate OTP and expiration
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000); // 6-digit OTP
+        faculty.setOtp(otp);
+        faculty.setOtpExpiration(LocalDateTime.now().plusMinutes(10)); // OTP valid for 10 minutes
+
+        facultyRepository.save(faculty);
+
+        // Send OTP email (logic to be implemented in mail service)
+        mailSenderService.sendOtp(faculty.getEmail(), otp);
+    }
+
+    @Transactional
+    @Override
+    public String verifyOtp(OtpVerificationRequest request) {
+        // Fetch the Student by ID
+        Faculty faculty = facultyRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        // Check if the OTP exists and matches
+        if (faculty.getOtp() == null || !faculty.getOtp().equals(request.getOtp())) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        // Check if the OTP expiration is valid (i.e., not expired)
+        if (faculty.getOtpExpiration() == null || faculty.getOtpExpiration().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired");
+        }
+
+        // Mark coordinator as verified
+        faculty.setIsVerified(true);
+        faculty.setOtp(null); // Clear OTP after successful verification
+        faculty.setOtpExpiration(null); // Clear expiration time
+        facultyRepository.save(faculty);
+
+        return "Faculty verified successfully";
+    }
+
+    @Override
+    public JwtResponse signIn(LoginRequest loginRequest) {
+        loginRequest.setRole("faculty");
+        String email = loginRequest.getEmail(); // Get email from login request
+        // Fetch the faculty by email
+        Faculty faculty = facultyRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Faculty not found"));
+        // Check if the faculty is verified
+        if (!faculty.getIsVerified()) {
+            sendOtp(faculty);
+            return new JwtResponse(null, "Faculty not verified yet OTP sent please verify");
+        }
+        // Fetch the password by faculty code
+        String password = passwordsRepository.findByFacultyFacultyCode(faculty.getFacultyCode())
+                .map(Passwords::getPassword)
+                .orElseThrow(() -> new RuntimeException("Password not found for Faculty"));
+        // Validate password
+        if (!passwordEncoder.matches(loginRequest.getPassword(), password)) {
+            throw new RuntimeException("Invalid credentials");
+        }
+        // Generate JWT token with email as the subject
+        String token = jwtProvider.generateToken(email, "ROLE_FACULTY");
+        // Return JwtResponse with token and a success message
+        return new JwtResponse(token, "Login successful");
     }
 }

@@ -55,11 +55,17 @@ public class FacultyController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    @PostMapping("/verify-otp")
+    public ResponseEntity<String> verifyOtp(@RequestBody OtpVerificationRequest request) {
+        String response = facultyService.verifyOtp(request);
+        return ResponseEntity.ok(response);
+    }
+
+    @PostMapping("/signin")
+    public ResponseEntity<JwtResponse> login(@RequestBody LoginRequest loginRequest) {
         loginRequest.setRole("faculty");
-        LoginResponse loginResponse = authService.login(loginRequest);
-        return ResponseEntity.ok(loginResponse);
+        JwtResponse jwtResponse = facultyService.signIn(loginRequest);
+        return ResponseEntity.ok(jwtResponse);
     }
 
     @GetMapping("/profile")

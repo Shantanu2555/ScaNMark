@@ -53,11 +53,17 @@ public class StudentController {
         return ResponseEntity.noContent().build();
     }
 
-    @PostMapping("/login")
-    public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
+    @PostMapping("/signin")
+    public ResponseEntity<JwtResponse> signIn(@RequestBody LoginRequest loginRequest) {
         loginRequest.setRole("student");
-        LoginResponse loginResponse = authService.login(loginRequest);
-        return ResponseEntity.ok(loginResponse);
+        JwtResponse jwtResponse = studentService.signIn(loginRequest);
+        return ResponseEntity.ok(jwtResponse);
+    }
+
+    @PostMapping("/verify-otp")
+    public ResponseEntity<String> verifyOtp(@RequestBody OtpVerificationRequest request) {
+        String response = studentService.verifyOtp(request);
+        return ResponseEntity.ok(response);
     }
 
     // Get Profile (Only authorized users can access their profile)

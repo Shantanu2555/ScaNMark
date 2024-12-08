@@ -1,6 +1,9 @@
 package com.cdac.scanmark.service;
 
 import com.cdac.scanmark.dto.AddStudentRequest;
+import com.cdac.scanmark.dto.JwtResponse;
+import com.cdac.scanmark.dto.LoginRequest;
+import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Student;
 import java.util.List;
 
@@ -15,4 +18,10 @@ public interface StudentService {
     Student getStudentByEmail(String email) ;
 
     Student addStudent(AddStudentRequest request) ;
+
+    JwtResponse signIn(LoginRequest loginRequest) ;
+
+    void sendOtp(Student student) ;
+
+    String verifyOtp(OtpVerificationRequest request) ;
 }
