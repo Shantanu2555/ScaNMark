@@ -3,6 +3,9 @@ package com.cdac.scanmark.service;
 import com.cdac.scanmark.dto.AddFacultyRequest;
 import com.cdac.scanmark.dto.LocationRequest;
 import com.cdac.scanmark.dto.QRResponse;
+import com.cdac.scanmark.dto.JwtResponse;
+import com.cdac.scanmark.dto.LoginRequest;
+import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Faculty;
 import java.util.List;
 public interface FacultyService {
@@ -26,4 +29,9 @@ public interface FacultyService {
 
     public QRResponse getQRForLecture(Long lectureId) ;
 
+    JwtResponse signIn(LoginRequest loginRequest) ;
+
+    void sendOtp(Faculty faculty) ;
+
+    String verifyOtp(OtpVerificationRequest request) ;
 }

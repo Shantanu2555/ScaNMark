@@ -4,6 +4,9 @@ import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.AddFacultyRequest;
 import com.cdac.scanmark.dto.LocationRequest;
 import com.cdac.scanmark.dto.QRResponse;
+import com.cdac.scanmark.dto.JwtResponse;
+import com.cdac.scanmark.dto.LoginRequest;
+import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Faculty;
 import com.cdac.scanmark.entities.Lecture;
 import com.cdac.scanmark.entities.Passwords;
@@ -19,6 +22,10 @@ import com.google.zxing.WriterException;
 import java.io.IOException;
 
 import org.springframework.http.HttpStatus;
+import com.cdac.scanmark.service.MailSenderService;
+
+import jakarta.transaction.Transactional;
+
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
@@ -37,19 +44,26 @@ public class FacultyServiceImpl implements FacultyService {
     private final QRCodeGenerator qrCodeGenerator;
     private final QRDataRepository qrDataRepository;
     private final LectureRepository lectureRepository;
+    private final MailSenderService mailSenderService;
+
 
     public FacultyServiceImpl(QRDataRepository qrDataRepository, LectureRepository lectureRepository,
             QRCodeGenerator qrCodeGenerator,
             JWTProvider jwtProvider, FacultyRepository facultyRepository, PasswordEncoder passwordEncoder,
-            PasswordsRepository passwordsRepository) {
-        this.facultyRepository = facultyRepository;
-        this.lectureRepository = lectureRepository;
-        this.qrDataRepository = qrDataRepository;
-        this.qrCodeGenerator = qrCodeGenerator;
-        this.passwordEncoder = passwordEncoder;
-        this.passwordsRepository = passwordsRepository;
-        this.jwtProvider = jwtProvider;
-    }
+            PasswordsRepository passwordsRepository, MailSenderService mailSenderService) {
+                
+                this.qrDataRepository = qrDataRepository ;
+                this.lectureRepository = lectureRepository ;
+                this.qrCodeGenerator = qrCodeGenerator ;
+                this.jwtProvider = jwtProvider ;
+                this.facultyRepository = facultyRepository ;
+                this.passwordEncoder = passwordEncoder ;
+                this.passwordsRepository = passwordsRepository ;
+                this.mailSenderService = mailSenderService;
+
+            }
+
+        
 
     @Override
     public List<Faculty> getAllFaculties() {
@@ -182,4 +196,68 @@ public class FacultyServiceImpl implements FacultyService {
         return new QRResponse(qrBase64);
     }
 
+    @Override
+    public void sendOtp(Faculty faculty) {
+        // Generate OTP and expiration
+        String otp = String.valueOf((int) (Math.random() * 900000) + 100000); // 6-digit OTP
+        faculty.setOtp(otp);
+        faculty.setOtpExpiration(LocalDateTime.now().plusMinutes(10)); // OTP valid for 10 minutes
+
+        facultyRepository.save(faculty);
+
+        // Send OTP email (logic to be implemented in mail service)
+        mailSenderService.sendOtp(faculty.getEmail(), otp);
+    }
+
+    @Transactional
+    @Override
+    public String verifyOtp(OtpVerificationRequest request) {
+        // Fetch the Student by ID
+        Faculty faculty = facultyRepository.findByEmail(request.getEmail())
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        // Check if the OTP exists and matches
+        if (faculty.getOtp() == null || !faculty.getOtp().equals(request.getOtp())) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        // Check if the OTP expiration is valid (i.e., not expired)
+        if (faculty.getOtpExpiration() == null || faculty.getOtpExpiration().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired");
+        }
+
+        // Mark coordinator as verified
+        faculty.setIsVerified(true);
+        faculty.setOtp(null); // Clear OTP after successful verification
+        faculty.setOtpExpiration(null); // Clear expiration time
+        facultyRepository.save(faculty);
+
+        return "Faculty verified successfully";
+    }
+
+    @Override
+    public JwtResponse signIn(LoginRequest loginRequest) {
+        loginRequest.setRole("faculty");
+        String email = loginRequest.getEmail(); // Get email from login request
+        // Fetch the faculty by email
+        Faculty faculty = facultyRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Faculty not found"));
+        // Check if the faculty is verified
+        if (!faculty.getIsVerified()) {
+            sendOtp(faculty);
+            return new JwtResponse(null, "Faculty not verified yet OTP sent please verify");
+        }
+        // Fetch the password by faculty code
+        String password = passwordsRepository.findByFacultyFacultyCode(faculty.getFacultyCode())
+                .map(Passwords::getPassword)
+                .orElseThrow(() -> new RuntimeException("Password not found for Faculty"));
+        // Validate password
+        if (!passwordEncoder.matches(loginRequest.getPassword(), password)) {
+            throw new RuntimeException("Invalid credentials");
+        }
+        // Generate JWT token with email as the subject
+        String token = jwtProvider.generateToken(email, "ROLE_FACULTY");
+        // Return JwtResponse with token and a success message
+        return new JwtResponse(token, "Login successful");
+    }
 }

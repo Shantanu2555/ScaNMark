@@ -30,7 +30,7 @@ public class Coordinator {
     @Column(nullable = false)
     private Boolean isVerified = false;
 
-    public Coordinator() {
+    public Coordinator() { isVerified = false ;
     }
 
     public Coordinator(Long id, String name, String email, String otp, LocalDateTime otpExpiration, Boolean isVerified) {

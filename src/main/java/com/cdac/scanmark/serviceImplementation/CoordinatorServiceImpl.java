@@ -134,14 +134,16 @@ public class CoordinatorServiceImpl implements CoordinatorService {
     @Override
     public String verifyOtp(OtpVerificationRequest request) {
         // Fetch the coordinator by ID
-        Coordinator coordinator = coordinatorRepository.findById(request.getCoordinatorId())
+        Coordinator coordinator = coordinatorRepository.findByEmail(request.getEmail())
                 .orElseThrow(() -> new RuntimeException("Coordinator not found"));
 
-        // Check if the OTP matches and is not expired
-        if (!coordinator.getOtp().equals(request.getOtp())) {
+        // Check if the OTP exists and matches
+        if (coordinator.getOtp() == null || !coordinator.getOtp().equals(request.getOtp())) {
             throw new RuntimeException("Invalid OTP");
         }
-        if (coordinator.getOtpExpiration().isBefore(LocalDateTime.now())) {
+
+        // Check if the OTP expiration is valid (i.e., not expired)
+        if (coordinator.getOtpExpiration() == null || coordinator.getOtpExpiration().isBefore(LocalDateTime.now())) {
             throw new RuntimeException("OTP has expired");
         }
 

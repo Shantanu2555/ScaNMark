@@ -1,5 +1,7 @@
 package com.cdac.scanmark.entities;
 
+import java.time.LocalDateTime;
+
 import jakarta.persistence.* ;
 import lombok.Getter;
 import lombok.Setter;
@@ -22,7 +24,14 @@ public class Student {
     private String macAddress ;
 
     @Column(nullable = false)
-    private boolean isVerified ;
+    private Boolean isVerified ;
+
+    //for otp based authentication
+    @Column(nullable = true)
+    private String otp ;
+
+    @Column(nullable = true)
+    private LocalDateTime otpExpiration ;
 
     public Student(){
         isVerified = false ;
@@ -33,6 +42,12 @@ public class Student {
         this.email = email;
         this.macAddress = macAddress;
         isVerified = false ;
+    }
+    public Boolean getIsVerified(){
+        return isVerified ;
+    }
+    public void setIsVerified(Boolean value){
+        this.isVerified = value ;
     }
 
 }

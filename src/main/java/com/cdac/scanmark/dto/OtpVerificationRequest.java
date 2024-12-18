@@ -8,11 +8,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class OtpVerificationRequest {
-    private Long coordinatorId;
+    private String email;
     private String otp;
 
-    public OtpVerificationRequest(Long coordinatorId, String otp) {
-        this.coordinatorId = coordinatorId;
+    public OtpVerificationRequest(String email, String otp) {
+        this.email = email;
         this.otp = otp;
     }
 
