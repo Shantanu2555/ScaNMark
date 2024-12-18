@@ -5,6 +5,10 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDateTime;
+import java.util.List;
+
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Getter
 @Setter
@@ -12,29 +16,37 @@ import java.time.LocalDateTime;
 public class Lecture {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Integer id ;
+    private Long id;
 
     @Column(nullable = false)
-    private String facultyName ;
+    @JsonProperty("facultyName")
+    private String facultyName;
 
     @Column(nullable = false)
-    private String subjectName ;
+    @JsonProperty("subjectName")
+    private String subjectName;
 
     @Column(nullable = false)
-    private LocalDateTime lectureTime ;
+    @JsonProperty("lectureTime")
+    private LocalDateTime lectureTime;
 
     @Column(nullable = false)
-    private String qrcodeReferance ;
+    @JsonProperty("qrcodeReferance")
+    private String qrcodeReferance;
 
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "faculty_code", nullable = false)
+    @JsonIgnore
     private Faculty faculty; // Foreign Key mapping to Faculty
 
-    public Lecture(){
+    @OneToMany(mappedBy = "lecture", cascade = CascadeType.ALL, orphanRemoval = true)
+    @JsonIgnore
+    private List<QRData> qrDataList; // One-to-Many with QRData
 
+    public Lecture() {
     }
 
-    public Lecture(Integer id, String facultyName, String subjectName, LocalDateTime lectureTime, String qrcodeReferance, Faculty faculty) {
+    public Lecture(Long id, String facultyName, String subjectName, LocalDateTime lectureTime, String qrcodeReferance, Faculty faculty) {
         this.id = id;
         this.facultyName = facultyName;
         this.subjectName = subjectName;

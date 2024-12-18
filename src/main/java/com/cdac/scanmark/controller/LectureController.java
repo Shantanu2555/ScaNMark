@@ -1,20 +1,33 @@
 package com.cdac.scanmark.controller;
 
+import com.cdac.scanmark.dto.LectureResponse;
+import com.cdac.scanmark.entities.Faculty;
 import com.cdac.scanmark.entities.Lecture;
+import com.cdac.scanmark.repository.FacultyRepository;
+import com.cdac.scanmark.repository.LectureRepository;
 import com.cdac.scanmark.service.LectureService;
+
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 @RestController
-@RequestMapping("/api/lectures")
+@RequestMapping("/api/lecture")
 public class LectureController {
 
     private final LectureService lectureService;
+    private final LectureRepository lectureRepository;
+    private final FacultyRepository facultyRepository;
 
-    public LectureController(LectureService lectureService) {
+    public LectureController(FacultyRepository facultyRepository, LectureService lectureService,
+            LectureRepository lectureRepository) {
         this.lectureService = lectureService;
+        this.lectureRepository = lectureRepository;
+        this.facultyRepository = facultyRepository;
     }
 
     @GetMapping
@@ -42,4 +55,28 @@ public class LectureController {
         lectureService.deleteLecture(id);
         return ResponseEntity.noContent().build();
     }
+
+    @GetMapping("/lectures")
+    public ResponseEntity<List<Lecture>> getLecturesByFacultyName(@RequestParam String facultyName) {
+        try {
+            System.out.println("Fetching faculty with name: " + facultyName);
+            Faculty faculty = facultyRepository.findByName(facultyName)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found"));
+
+            System.out.println("Faculty found: " + faculty);
+
+            List<Lecture> lectures = lectureRepository.findByFaculty(faculty);
+
+            System.out.println("Lectures fetched: " + lectures);
+            if (lectures.isEmpty()) {
+                System.out.println("lectures list empty");
+                return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+            }
+            return ResponseEntity.ok(lectures);
+        } catch (Exception e) {
+            System.err.println("Error while processing the request: " + e.getMessage());
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Could not fetch lectures");
+        }
+    }
+
 }
