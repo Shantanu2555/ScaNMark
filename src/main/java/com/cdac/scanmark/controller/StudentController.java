@@ -6,6 +6,8 @@ import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.service.ForgotPasswordService;
 import com.cdac.scanmark.service.StudentService;
 import com.cdac.scanmark.serviceImplementation.AuthService;
+
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,12 +17,14 @@ import java.util.List;
 @RequestMapping("/api/students")
 public class StudentController {
 
+    @Autowired
     private final StudentService studentService;
     private final AuthService authService;
-    private final JWTProvider jwtProvider ;
-    private final ForgotPasswordService forgotPasswordService ;
+    private final JWTProvider jwtProvider;
+    private final ForgotPasswordService forgotPasswordService;
 
-    public StudentController(StudentService studentService, AuthService authService, JWTProvider jwtProvider, ForgotPasswordService forgotPasswordService) {
+    public StudentController(StudentService studentService, AuthService authService, JWTProvider jwtProvider,
+            ForgotPasswordService forgotPasswordService) {
         this.studentService = studentService;
         this.authService = authService;
         this.jwtProvider = jwtProvider;
@@ -54,10 +58,10 @@ public class StudentController {
     }
 
     @PostMapping("/signin")
-    public ResponseEntity<JwtResponse> signIn(@RequestBody LoginRequest loginRequest) {
+    public ResponseEntity<?> signIn(@RequestBody LoginRequest loginRequest) {
         loginRequest.setRole("student");
-        JwtResponse jwtResponse = studentService.signIn(loginRequest);
-        return ResponseEntity.ok(jwtResponse);
+        Object response = studentService.signIn(loginRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/verify-otp")
@@ -79,14 +83,13 @@ public class StudentController {
         StudentProfileResponse response = new StudentProfileResponse();
         response.setPrn(student.getPrn());
         response.setName(student.getName());
-        response.setEmail(student.getEmail());
-        response.setMacAddress(student.getMacAddress());
-
+        response.setEmail(student.getEmail()) ;
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
+            @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         String email = forgotPasswordRequest.getEmail();
         String responseMessage = forgotPasswordService.forgotPassword(email);
 
@@ -106,6 +109,5 @@ public class StudentController {
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);
         return ResponseEntity.ok(response);
     }
-
 
 }

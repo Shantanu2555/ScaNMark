@@ -258,6 +258,6 @@ public class FacultyServiceImpl implements FacultyService {
         // Generate JWT token with email as the subject
         String token = jwtProvider.generateToken(email, "ROLE_FACULTY");
         // Return JwtResponse with token and a success message
-        return new JwtResponse(token, "Login successful");
+        return new JwtResponse(token, "Login successful for: " + faculty.getName());
     }
 }

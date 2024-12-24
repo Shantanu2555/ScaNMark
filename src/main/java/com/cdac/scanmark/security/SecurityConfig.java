@@ -49,16 +49,25 @@ public class SecurityConfig {
                                 "/api/coordinators/verify-otp",
                                 "/api/coordinators/forgot-password",
                                 "/api/coordinators/reset-password",
+                                "/api/students/signin",
+                                "/api/students/verify-otp",
                                 "/api/students/forgot-password",
                                 "/api/students/reset-password",
+                                "/api/faculty/signin",
+                                "/api/faculty/verify-otp",
                                 "/api/faculty/forgot-password",
                                 "/api/faculty/reset-password",
                                 "/api/coordinators/add-student",
-                                "/api/coordinators/add-faculty",  
+                                "/api/coordinators/add-faculty", 
+                                "/api/coordinators/signin",
+                                "/attendance-dashboard.html",  
                                 "/faculty-login.html", 
                                 "/faculty-dashboard.html", 
+                                "/student-login.html", 
+                                "/student-dashboard.html", 
                                 "/config/ngrok-url",
                                 "/favicon.ico", 
+                                "/api/attendance/mark-attendance", // temporaryly put in permit all for testing later move 
                                 "/api/lecture/lectures").permitAll()  // Allow auth and login endpoints
                         .requestMatchers("/api/coordinators/profile",
                                 "/api/coordinators/search-student/{prn}",
@@ -71,7 +80,8 @@ public class SecurityConfig {
                         .requestMatchers("/api/faculty/profile", 
                         "/api/faculty/generate-qr", 
                         "/api/faculty/show-qr-again").hasRole("FACULTY")  // Ensure only faculty can access this endpoint
-                        .requestMatchers("/api/students/profile").hasRole("STUDENT")  // Ensure only students can access this endpoint
+                        .requestMatchers("/api/students/profile" 
+                        ).hasRole("STUDENT")  // Ensure only students can access this endpoint
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

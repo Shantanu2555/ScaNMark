@@ -19,7 +19,7 @@ public interface StudentService {
 
     Student addStudent(AddStudentRequest request) ;
 
-    JwtResponse signIn(LoginRequest loginRequest) ;
+    Object signIn(LoginRequest loginRequest) ;
 
     void sendOtp(Student student) ;
 

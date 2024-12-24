@@ -1,8 +1,11 @@
 package com.cdac.scanmark.entities;
 
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 
-import jakarta.persistence.* ;
+import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -12,42 +15,62 @@ import lombok.Setter;
 public class Student {
 
     @Id
-    private Long prn ;
+    private Long prn;
 
     @Column(nullable = false)
-    private String name ;
+    private String name;
 
     @Column(unique = true, nullable = false)
-    private String email ;
+    private String email;
 
-    @Column(nullable = false)
-    private String macAddress ;
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean isVerified;
 
-    @Column(nullable = false)
-    private Boolean isVerified ;
-
-    //for otp based authentication
+    // for otp based authentication
     @Column(nullable = true)
-    private String otp ;
+    private String otp;
 
     @Column(nullable = true)
-    private LocalDateTime otpExpiration ;
+    private LocalDateTime otpExpiration;
 
-    public Student(){
-        isVerified = false ;
+    // for crypto based validation
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String privateKey;
+
+    @Column(columnDefinition = "TEXT", nullable = true)
+    private String publicKey;
+
+    @Column(nullable = false, columnDefinition = "BOOLEAN DEFAULT false")
+    private Boolean isPrivateKeySent;
+
+    public Student() {
+        isVerified = false;
     }
-    public Student(Long prn, String name, String email, String macAddress) {
+
+    public Student(Long prn, String name, String email) {
         this.prn = prn;
         this.name = name;
         this.email = email;
-        this.macAddress = macAddress;
-        isVerified = false ;
+        isVerified = false;
     }
-    public Boolean getIsVerified(){
-        return isVerified ;
+
+    public Student(Long prn, String name, String email, String otp, LocalDateTime otpExpiration,
+            String privateKey, String publicKey) {
+        this.prn = prn;
+        this.name = name;
+        this.email = email;
+        this.otp = otp;
+        this.otpExpiration = otpExpiration;
+        this.privateKey = privateKey;
+        this.publicKey = publicKey;
     }
-    public void setIsVerified(Boolean value){
-        this.isVerified = value ;
+
+    public Boolean getIsVerified() {
+        return isVerified;
+    }
+
+    public void setIsVerified(Boolean value) {
+        this.isVerified = value;
     }
 
 }

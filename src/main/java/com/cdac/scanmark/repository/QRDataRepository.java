@@ -28,4 +28,6 @@ public interface QRDataRepository extends JpaRepository<QRData, Long> {
 
     QRData findTopByLectureIdOrderByCreatedAtDesc(Long lectureId) ;
 
+    Optional<QRData> findByLectureId(Long lectureId);
+
 }

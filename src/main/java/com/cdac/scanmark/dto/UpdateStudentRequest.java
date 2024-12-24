@@ -10,5 +10,4 @@ import lombok.*;
 public class UpdateStudentRequest {
     private String name ;
     private String email ;
-    private String macAddress ;
 }

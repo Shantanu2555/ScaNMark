@@ -198,9 +198,6 @@ public class CoordinatorServiceImpl implements CoordinatorService {
 //                    .orElseThrow(() -> new RuntimeException("Student not found after update!"));
             entityManager.refresh(student);
         }
-        if (request.getMacAddress() != null && !request.getMacAddress().isBlank()) {
-            student.setMacAddress(request.getMacAddress());
-        }
         return studentRepository.save(student);
     }
     @Transactional

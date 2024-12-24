@@ -1,8 +1,14 @@
 package com.cdac.scanmark.controller;
 
+import com.cdac.scanmark.dto.AttendanceRequest;
 import com.cdac.scanmark.entities.Attendance;
 import com.cdac.scanmark.service.AttendanceService;
+
+import jakarta.validation.ValidationException;
+import lombok.RequiredArgsConstructor;
+
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -62,5 +68,15 @@ public class AttendanceController {
     public ResponseEntity<List<Attendance>> getAttendanceByLecture(@PathVariable Long lectureId) {
         List<Attendance> attendanceList = attendanceService.getAttendanceByLecture(lectureId);
         return ResponseEntity.ok(attendanceList);
+    }
+
+    @PostMapping("/mark-attendance")
+    public ResponseEntity<String> markAttendance(@RequestBody AttendanceRequest request) {
+        try {
+            attendanceService.markAttendance(request);
+            return ResponseEntity.ok("Attendance marked successfully!");
+        } catch (ValidationException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        }
     }
 }

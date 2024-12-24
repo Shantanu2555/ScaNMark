@@ -3,21 +3,25 @@ package com.cdac.scanmark.serviceImplementation;
 import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.AddStudentRequest;
 import com.cdac.scanmark.dto.JwtResponse;
+import com.cdac.scanmark.dto.JwtResponseWithKey;
 import com.cdac.scanmark.dto.LoginRequest;
 import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Student;
-import com.cdac.scanmark.entities.Coordinator;
 import com.cdac.scanmark.entities.Passwords;
 import com.cdac.scanmark.repository.PasswordsRepository;
 import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.MailSenderService;
 import com.cdac.scanmark.service.StudentService;
+import com.cdac.scanmark.util.KeyGeneratorUtil;
+
+import java.util.Base64;
 
 import jakarta.transaction.Transactional;
 
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -25,25 +29,24 @@ import java.util.List;
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
-    private final PasswordEncoder passwordEncoder ;
-    private final PasswordsRepository passwordsRepository ;
-    private final JWTProvider jwtProvider ;
-    private final MailSenderService mailSenderService ;
-    
+    private final PasswordEncoder passwordEncoder;
+    private final PasswordsRepository passwordsRepository;
+    private final JWTProvider jwtProvider;
+    private final MailSenderService mailSenderService;
 
-    public StudentServiceImpl(StudentRepository studentRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService) {
+    public StudentServiceImpl(StudentRepository studentRepository, PasswordEncoder passwordEncoder,
+            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
-        this.jwtProvider = jwtProvider ;
-        this.mailSenderService = mailSenderService ;
+        this.jwtProvider = jwtProvider;
+        this.mailSenderService = mailSenderService;
     }
 
     @Override
     public List<Student> getAllStudents() {
         return studentRepository.findAll();
     }
-
 
     @Override
     public Student getStudentByPrn(Long prn) {
@@ -70,7 +73,6 @@ public class StudentServiceImpl implements StudentService {
         Student existingStudent = getStudentByPrn(prn);
         existingStudent.setName(updatedStudent.getName());
         existingStudent.setEmail(updatedStudent.getEmail());
-        existingStudent.setMacAddress(updatedStudent.getMacAddress());
         return studentRepository.save(existingStudent);
     }
 
@@ -91,16 +93,15 @@ public class StudentServiceImpl implements StudentService {
         student.setPrn(request.getPrn());
         student.setName(request.getName());
         student.setEmail(request.getEmail());
-        student.setMacAddress(request.getMacAddress());
         studentRepository.save(student);
 
         // Generate default or custom password
         String defaultPassword = String
                 .valueOf(request.getPrn())
                 .substring(String.valueOf(request.getPrn())
-                .length() - 4); // Last 4 digits of PRN
+                        .length() - 4); // Last 4 digits of PRN
 
-        String encodedPassword = passwordEncoder.encode(defaultPassword) ;
+        String encodedPassword = passwordEncoder.encode(defaultPassword);
 
         // Save Password
         Passwords passwordEntry = new Passwords();
@@ -112,13 +113,13 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public void sendOtp(Student student){
+    public void sendOtp(Student student) {
         // Generate OTP and expiration
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000); // 6-digit OTP
         student.setOtp(otp);
         student.setOtpExpiration(LocalDateTime.now().plusMinutes(10)); // OTP valid for 10 minutes
 
-        studentRepository.save(student) ;
+        studentRepository.save(student);
 
         // Send OTP email (logic to be implemented in mail service)
         mailSenderService.sendOtp(student.getEmail(), otp);
@@ -151,9 +152,10 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public JwtResponse signIn(LoginRequest loginRequest) {
+    public Object signIn(LoginRequest loginRequest) {
         loginRequest.setRole("student");
         String email = loginRequest.getEmail(); // Get email from login request
+
         // Fetch the Student by email
         Student student = studentRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
@@ -170,9 +172,43 @@ public class StudentServiceImpl implements StudentService {
         if (!passwordEncoder.matches(loginRequest.getPassword(), password)) {
             throw new RuntimeException("Invalid credentials");
         }
+
+        try {
+            // Check if the student already has keys
+            if (student.getPrivateKey() == null) {
+                generateKeysForStudent(student);
+            }
+
+        } catch (Exception e) {
+            throw new RuntimeException("Error generating cryptographic keys for student", e);
+        }
         // Generate JWT token with email as the subject
         String token = jwtProvider.generateToken(email, "ROLE_STUDENT");
         // Return JwtResponse with token and a success message
-        return new JwtResponse(token, "Login successful");
+
+        // Check and send public key if not already sent
+        if (student.getIsVerified() && !student.getIsPrivateKeySent()) {
+            student.setIsPrivateKeySent(true);
+            studentRepository.save(student); // Persist the flag update
+            return new JwtResponseWithKey(token, "Login successful for: " + student.getName(), student.getPrivateKey());
+        }
+        return new JwtResponse(token, "Login successful for: " + student.getName());
     }
+
+    public void generateKeysForStudent(Student student) throws Exception {
+
+        // Generate Key Pair
+        KeyPair keyPair = KeyGeneratorUtil.generateKeyPair();
+        String publicKey =
+        Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+        String privateKey =
+        Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded());
+
+        // Save keys
+        student.setPublicKey(publicKey);
+        student.setPrivateKey(privateKey);
+
+        studentRepository.save(student);
+    }
+
 }
