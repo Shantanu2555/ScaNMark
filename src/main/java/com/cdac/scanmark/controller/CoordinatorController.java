@@ -4,10 +4,11 @@ import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
 import com.cdac.scanmark.entities.Attendance;
 import com.cdac.scanmark.entities.Faculty;
+import com.cdac.scanmark.entities.Lecture;
 import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.exceptions.ResourceNotFoundException;
 import com.cdac.scanmark.service.*;
-import com.cdac.scanmark.entities.Coordinator ;
+import com.cdac.scanmark.entities.Coordinator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
@@ -17,45 +18,45 @@ import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 
 @RestController
 @RequestMapping("/api/coordinators")
 public class CoordinatorController {
 
     @Autowired
-    private final CoordinatorService coordinatorService ;
+    private final CoordinatorService coordinatorService;
     @Autowired
-    private JWTProvider jwtProvider ;
+    private JWTProvider jwtProvider;
     @Autowired
     private ForgotPasswordService forgotPasswordService;
     @Autowired
-    private AttendanceService attendanceService ;
+    private AttendanceService attendanceService;
     @Autowired
-    private StudentService studentService ;
+    private StudentService studentService;
     @Autowired
-    private FacultyService facultyService ;
+    private FacultyService facultyService;
 
     public CoordinatorController(CoordinatorService coordinatorService) {
         this.coordinatorService = coordinatorService;
     }
 
-
-    @PostMapping("/login")
+    @PostMapping("/signin")
     public ResponseEntity<LoginResponse> login(@RequestBody LoginRequest loginRequest) {
         loginRequest.setRole("coordinator");
         // Call signIn method in CoordinatorService
         JwtResponse jwtResponse = coordinatorService.signIn(loginRequest);
 
         // Map JwtResponse to LoginResponse
-        LoginResponse loginResponse = new LoginResponse(jwtResponse.getToken(), jwtResponse.getMessage());  // call signIn here
+        LoginResponse loginResponse = new LoginResponse(jwtResponse.getToken(), jwtResponse.getMessage()); 
         return ResponseEntity.ok(loginResponse);
     }
 
-
     @PostMapping("/signup")
-    public ResponseEntity<SignUpResponse> signup(@RequestBody SignUpRequest signUpRequest){
-        SignUpResponse response = coordinatorService.signup(signUpRequest) ;
-        return ResponseEntity.ok(response) ;
+    public ResponseEntity<SignUpResponse> signup(@RequestBody SignUpRequest signUpRequest) {
+        SignUpResponse response = coordinatorService.signup(signUpRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/verify-otp")
@@ -66,7 +67,8 @@ public class CoordinatorController {
 
     // Forgot Password - Request OTP
     @PostMapping("/forgot-password")
-    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@RequestBody ForgotPasswordRequest forgotPasswordRequest) {
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
+            @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
         String email = forgotPasswordRequest.getEmail();
         String responseMessage = forgotPasswordService.forgotPassword(email);
 
@@ -79,8 +81,9 @@ public class CoordinatorController {
 
     // Reset Password
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
-        String email = resetPasswordRequest.getEmail();
+    public ResponseEntity<String> resetPassword(@RequestHeader("Authorization") String token,
+            @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        String email = jwtProvider.getUsernameFromToken(token.substring(7)); // Remove "Bearer "
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);
@@ -103,14 +106,15 @@ public class CoordinatorController {
 
         return ResponseEntity.ok(response);
     }
+
     @GetMapping("/search-student/{prn}")
-    public ResponseEntity<StudentHistoryResponse> searchStudent(@PathVariable Long prn){
-        StudentHistoryResponse response = coordinatorService.getStudentHistoryByPrn(prn) ;
-        return ResponseEntity.ok(response) ;
+    public ResponseEntity<StudentHistoryResponse> searchStudent(@RequestHeader("Authorization") String token,@PathVariable Long prn) {
+        StudentHistoryResponse response = coordinatorService.getStudentHistoryByPrn(prn);
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/search-attendance-by-date/{date}")
-    public ResponseEntity<List<Attendance>> getAttendanceByDate(
+    public ResponseEntity<List<Attendance>> getAttendanceByDate(@RequestHeader("Authorization") String token,
             @PathVariable @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate date) {
         List<Attendance> attendanceList = attendanceService.getAttendanceByDate(date);
         if (attendanceList.isEmpty()) {
@@ -120,53 +124,58 @@ public class CoordinatorController {
     }
 
     @GetMapping("/faculty-history/{facultyCode}")
-    public ResponseEntity<FacultyLectureHistoryResponse> getFacultyHistory(@PathVariable String facultyCode) {
+    public ResponseEntity<FacultyLectureHistoryResponse> getFacultyHistory(@RequestHeader("Authorization") String token, @PathVariable String facultyCode) {
         FacultyLectureHistoryResponse response = coordinatorService.getFacultyHistory(facultyCode);
         return ResponseEntity.ok(response);
     }
 
     @PostMapping("/add-student")
-    public ResponseEntity<Student> addStudent(@RequestBody AddStudentRequest addStudentRequest){
-        Student response = studentService.addStudent(addStudentRequest) ;
-        return ResponseEntity.ok(response) ;
+    public ResponseEntity<Student> addStudent(@RequestHeader("Authorization") String token, @RequestBody AddStudentRequest addStudentRequest) {
+        Student response = studentService.addStudent(addStudentRequest);
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping("/add-faculty")
-    public ResponseEntity<Faculty> addFaculty(@RequestBody AddFacultyRequest addFacultyRequest){
-        Faculty response = facultyService.addFaculty(addFacultyRequest) ;
-        return ResponseEntity.ok(response) ;
+    public ResponseEntity<Faculty> addFaculty(@RequestHeader("Authorization") String token, @RequestBody AddFacultyRequest addFacultyRequest) {
+        Faculty response = facultyService.addFaculty(addFacultyRequest);
+        return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/updateStudent/{prn}")
-    public ResponseEntity<Student> updateStudent(
+    @PutMapping("/update-student/{prn}")
+    public ResponseEntity<Student> updateStudent(@RequestHeader("Authorization") String token, 
             @PathVariable Long prn,
             @RequestBody UpdateStudentRequest request) {
         Student updatedStudent = coordinatorService.updateStudent(prn, request);
         return ResponseEntity.ok(updatedStudent);
     }
-    @DeleteMapping("/deleteStudent/{prn}")
-    public ResponseEntity<Map<String, String>> deleteStudent(@PathVariable Long prn) {
+
+    @DeleteMapping("/delete-student/{prn}")
+    public ResponseEntity<Map<String, String>> deleteStudent(@RequestHeader("Authorization") String token, @PathVariable Long prn) {
         coordinatorService.deleteStudent(prn);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Student deleted successfully");
         return ResponseEntity.ok(response);
     }
 
-    @PutMapping("/updateFaculty/{facultyCode}")
-    public ResponseEntity<Faculty> updateFaculty(
+    @PutMapping("/update-faculty/{facultyCode}")
+    public ResponseEntity<Faculty> updateFaculty(@RequestHeader("Authorization") String token, 
             @PathVariable String facultyCode,
             @RequestBody UpdateFacultyRequest request) {
         Faculty updatedFaculty = coordinatorService.updateFaculty(facultyCode, request);
         return ResponseEntity.ok(updatedFaculty);
     }
 
-    @DeleteMapping("/deleteFaculty/{facultyCode}")
-    public ResponseEntity<Map<String, String>> deleteFaculty(@PathVariable String facultyCode) {
+    @DeleteMapping("/delete-faculty/{facultyCode}")
+    public ResponseEntity<Map<String, String>> deleteFaculty(@RequestHeader("Authorization") String token, @PathVariable String facultyCode) {
         coordinatorService.deleteFaculty(facultyCode);
         Map<String, String> response = new HashMap<>();
         response.put("message", "Faculty deleted successfully");
         return ResponseEntity.ok(response);
     }
 
-
+    @PostMapping("/schedule-lecture")
+    public ResponseEntity<Lecture> postMethodName(@RequestHeader("Authorization") String token, @RequestBody ScheduleLectureRequest scheduleLectureRequest) {
+        Lecture response = coordinatorService.scheduleLecture(scheduleLectureRequest);
+        return ResponseEntity.ok(response);
+    }
 }

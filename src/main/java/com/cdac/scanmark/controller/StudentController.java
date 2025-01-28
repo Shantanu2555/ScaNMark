@@ -83,7 +83,7 @@ public class StudentController {
         StudentProfileResponse response = new StudentProfileResponse();
         response.setPrn(student.getPrn());
         response.setName(student.getName());
-        response.setEmail(student.getEmail()) ;
+        response.setEmail(student.getEmail());
         return ResponseEntity.ok(response);
     }
 
@@ -102,8 +102,9 @@ public class StudentController {
 
     // Reset Password
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
-        String email = resetPasswordRequest.getEmail();
+    public ResponseEntity<String> resetPassword(@RequestHeader("Authorization") String token,
+            @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        String email = jwtProvider.getUsernameFromToken(token.substring(7)); // Remove "Bearer "
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);

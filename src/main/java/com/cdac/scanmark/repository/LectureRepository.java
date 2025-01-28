@@ -8,6 +8,7 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Repository;
 
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,4 +22,7 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
     List<Lecture> findByFacultyCode(@Param("facultyCode") String facultyCode);
 
     List<Lecture> findByFaculty(Faculty faculty);
+
+    boolean existsByFacultyAndLectureTime(Faculty faculty, LocalDateTime lectureTime);
+
 }

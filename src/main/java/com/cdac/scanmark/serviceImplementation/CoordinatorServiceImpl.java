@@ -14,22 +14,26 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class CoordinatorServiceImpl implements CoordinatorService {
 
     private final CoordinatorRepository coordinatorRepository;
     private final PasswordEncoder passwordEncoder;
-    private final PasswordsRepository passwordsRepository ;
-    private final MailSenderService mailSenderService ;
-    private final JWTProvider jwtProvider ;
-    private final StudentRepository studentRepository ;
-    private final AttendanceRepository attendanceRepository ;
-    private final FacultyRepository facultyRepository ;
-    private final LectureRepository lectureRepository ;
-    private final EntityManager entityManager ;
+    private final PasswordsRepository passwordsRepository;
+    private final MailSenderService mailSenderService;
+    private final JWTProvider jwtProvider;
+    private final StudentRepository studentRepository;
+    private final AttendanceRepository attendanceRepository;
+    private final FacultyRepository facultyRepository;
+    private final LectureRepository lectureRepository;
+    private final EntityManager entityManager;
 
-    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder, PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider, StudentRepository studentRepository, AttendanceRepository attendanceRepository, FacultyRepository facultyRepository, LectureRepository lectureRepository, EntityManager entityManager) {
+    public CoordinatorServiceImpl(CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder,
+            PasswordsRepository passwordsRepository, MailSenderService mailSenderService, JWTProvider jwtProvider,
+            StudentRepository studentRepository, AttendanceRepository attendanceRepository,
+            FacultyRepository facultyRepository, LectureRepository lectureRepository, EntityManager entityManager) {
         this.coordinatorRepository = coordinatorRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
@@ -102,7 +106,8 @@ public class CoordinatorServiceImpl implements CoordinatorService {
         // Send OTP email (logic to be implemented in mail service)
         mailSenderService.sendOtp(signUpRequest.getEmail(), otp);
 
-        return new SignUpResponse("Coordinator registered successfully. Please verify OTP to activate your account.", coordinator.getId());
+        return new SignUpResponse("Coordinator registered successfully. Please verify OTP to activate your account.",
+                coordinator.getId());
     }
 
     @Override
@@ -165,7 +170,7 @@ public class CoordinatorServiceImpl implements CoordinatorService {
     @Override
     public StudentHistoryResponse getStudentHistoryByPrn(Long prn) {
         Student student = studentRepository.findByPrn(prn)
-                .orElseThrow(() -> new ResourceNotFoundException("Student not found with prn : " + prn)) ;
+                .orElseThrow(() -> new ResourceNotFoundException("Student not found with prn : " + prn));
 
         List<Attendance> attendanceList = attendanceRepository.findByStudentPrn(prn);
 
@@ -193,13 +198,14 @@ public class CoordinatorServiceImpl implements CoordinatorService {
         if (request.getEmail() != null && !request.getEmail().isBlank()) {
             student.setEmail(request.getEmail());
             studentRepository.setIsVerifiedFalse(prn);
-            //Refresh student entity to ensure latest data is loaded
-//            student = studentRepository.findByPrn(prn)
-//                    .orElseThrow(() -> new RuntimeException("Student not found after update!"));
+            // Refresh student entity to ensure latest data is loaded
+            // student = studentRepository.findByPrn(prn)
+            // .orElseThrow(() -> new RuntimeException("Student not found after update!"));
             entityManager.refresh(student);
         }
         return studentRepository.save(student);
     }
+
     @Transactional
     public void deleteStudent(Long prn) {
         if (!studentRepository.existsByPrn(prn)) {
@@ -236,4 +242,43 @@ public class CoordinatorServiceImpl implements CoordinatorService {
         passwordsRepository.deleteByFacultyFacultyCode(facultyCode);
         facultyRepository.deleteByFacultyCode(facultyCode);
     }
+
+    @Override
+public Lecture scheduleLecture(ScheduleLectureRequest scheduleLectureRequest) {
+    // Validate Request
+    if (scheduleLectureRequest.getFacultyName() == null || 
+        scheduleLectureRequest.getSubjectName() == null ||
+        scheduleLectureRequest.getLectureTime() == null || 
+        scheduleLectureRequest.getFacultyCode() == null) {
+        throw new IllegalArgumentException("Faculty name, subject name, lecture time, and faculty code must not be null.");
+    }
+
+    // Validate if the faculty exists using the faculty code
+    Optional<Faculty> facultyOptional = facultyRepository.findByFacultyCode(scheduleLectureRequest.getFacultyCode());
+    if (facultyOptional.isEmpty()) {
+        throw new RuntimeException("No faculty found with the provided code: " + scheduleLectureRequest.getFacultyCode());
+    }
+    Faculty faculty = facultyOptional.get();
+
+    // Check if the faculty is available at the requested time
+    boolean isFacultyAvailable = lectureRepository.existsByFacultyAndLectureTime(
+            faculty, scheduleLectureRequest.getLectureTime());
+
+    if (isFacultyAvailable) {
+        throw new RuntimeException("The faculty is already scheduled for a lecture at the given time.");
+    }
+
+    // Create a new Lecture object
+    Lecture lecture = new Lecture();
+    lecture.setFacultyName(scheduleLectureRequest.getFacultyName());
+    lecture.setSubjectName(scheduleLectureRequest.getSubjectName());
+    lecture.setLectureTime(scheduleLectureRequest.getLectureTime());
+    lecture.setFaculty(faculty); // Set the faculty entity
+
+    // Save the lecture to the database
+    lecture = lectureRepository.save(lecture);
+
+    return lecture;
+}
+
 }

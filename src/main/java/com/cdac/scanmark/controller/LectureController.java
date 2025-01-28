@@ -1,6 +1,5 @@
 package com.cdac.scanmark.controller;
 
-import com.cdac.scanmark.dto.LectureResponse;
 import com.cdac.scanmark.entities.Faculty;
 import com.cdac.scanmark.entities.Lecture;
 import com.cdac.scanmark.repository.FacultyRepository;
@@ -13,7 +12,6 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.List;
-import java.util.stream.Collectors;
 
 @RestController
 @RequestMapping("/api/lecture")
@@ -56,8 +54,10 @@ public class LectureController {
         return ResponseEntity.noContent().build();
     }
 
+    //getting list of lectures by faculty name
     @GetMapping("/lectures")
-    public ResponseEntity<List<Lecture>> getLecturesByFacultyName(@RequestParam String facultyName) {
+    public ResponseEntity<List<Lecture>> getLecturesByFacultyName(@RequestHeader("Authorization") String token, 
+    @RequestParam String facultyName) {
         try {
             System.out.println("Fetching faculty with name: " + facultyName);
             Faculty faculty = facultyRepository.findByName(facultyName)

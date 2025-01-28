@@ -30,10 +30,6 @@ public class Lecture {
     @JsonProperty("lectureTime")
     private LocalDateTime lectureTime;
 
-    @Column(nullable = false)
-    @JsonProperty("qrcodeReferance")
-    private String qrcodeReferance;
-
     @ManyToOne(fetch = FetchType.EAGER)
     @JoinColumn(name = "faculty_code", nullable = false)
     @JsonIgnore
@@ -46,12 +42,11 @@ public class Lecture {
     public Lecture() {
     }
 
-    public Lecture(Long id, String facultyName, String subjectName, LocalDateTime lectureTime, String qrcodeReferance, Faculty faculty) {
+    public Lecture(Long id, String facultyName, String subjectName, LocalDateTime lectureTime, Faculty faculty) {
         this.id = id;
         this.facultyName = facultyName;
         this.subjectName = subjectName;
         this.lectureTime = lectureTime;
-        this.qrcodeReferance = qrcodeReferance;
         this.faculty = faculty;
     }
 }

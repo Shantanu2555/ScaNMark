@@ -15,8 +15,6 @@ public interface AttendanceService {
 
     Attendance getAttendanceById(Long id);
 
-    Attendance createAttendance(Attendance attendance);
-
     Attendance updateAttendance(Long id, Attendance attendance);
 
     void deleteAttendance(Long id);

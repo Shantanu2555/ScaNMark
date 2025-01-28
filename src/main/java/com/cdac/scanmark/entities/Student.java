@@ -45,13 +45,15 @@ public class Student {
 
     public Student() {
         isVerified = false;
+        isPrivateKeySent = false ;
     }
 
     public Student(Long prn, String name, String email) {
         this.prn = prn;
         this.name = name;
         this.email = email;
-        isVerified = false;
+        this.isVerified = false;
+        this.isPrivateKeySent = false ;
     }
 
     public Student(Long prn, String name, String email, String otp, LocalDateTime otpExpiration,
@@ -71,6 +73,14 @@ public class Student {
 
     public void setIsVerified(Boolean value) {
         this.isVerified = value;
+    }
+
+    public Boolean getIsPrivateKeySent(){
+        return isPrivateKeySent;
+    }
+
+    public void setIsPrivateKeySent(Boolean value){
+        this.isPrivateKeySent = value;
     }
 
 }

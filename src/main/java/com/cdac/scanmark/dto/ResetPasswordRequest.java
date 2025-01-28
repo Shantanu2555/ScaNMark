@@ -7,13 +7,11 @@ import lombok.Setter;
 @Getter
 @Setter
 public class ResetPasswordRequest {
-    private String email;
     private String otp;
     private String newPassword;
     private String role ;
 
-    public ResetPasswordRequest(String email, String otp, String newPassword, String role) {
-        this.email = email;
+    public ResetPasswordRequest(String otp, String newPassword, String role) {
         this.otp = otp;
         this.newPassword = newPassword;
         this.role = role ;

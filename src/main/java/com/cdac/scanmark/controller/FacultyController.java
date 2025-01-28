@@ -7,9 +7,6 @@ import com.cdac.scanmark.entities.QRData;
 import com.cdac.scanmark.repository.QRDataRepository;
 import com.cdac.scanmark.service.FacultyService;
 import com.cdac.scanmark.service.ForgotPasswordService;
-import com.cdac.scanmark.serviceImplementation.AuthService;
-import com.cdac.scanmark.util.JwtUtil;
-import com.cdac.scanmark.util.QRCodeGenerator;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -23,46 +20,23 @@ import java.util.List;
 public class FacultyController {
 
     private final FacultyService facultyService;
-    private final AuthService authService;
     private final JWTProvider jwtProvider;
     private final ForgotPasswordService forgotPasswordService;
     private final QRDataRepository qrDataRepository;
 
     public FacultyController(
-            FacultyService facultyService, QRDataRepository qrDataRepository, AuthService authService,
+            FacultyService facultyService, QRDataRepository qrDataRepository,
             JWTProvider jwtProvider,
             ForgotPasswordService forgotPasswordService) {
         this.facultyService = facultyService;
         this.qrDataRepository = qrDataRepository;
-        this.authService = authService;
         this.jwtProvider = jwtProvider;
         this.forgotPasswordService = forgotPasswordService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<Faculty>> getAllFaculty() {
+    @GetMapping("/get-all-faculties")
+    public ResponseEntity<List<Faculty>> getAllFaculty(@RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(facultyService.getAllFaculty());
-    }
-
-    @GetMapping("/{id}")
-    public ResponseEntity<Faculty> getFacultyById(@PathVariable String code) {
-        return ResponseEntity.ok(facultyService.getFacultyByFacultyCode(code));
-    }
-
-    @PostMapping
-    public ResponseEntity<Faculty> createFaculty(@RequestBody Faculty faculty) {
-        return ResponseEntity.ok(facultyService.createFaculty(faculty));
-    }
-
-    @PutMapping("/{id}")
-    public ResponseEntity<Faculty> updateFaculty(@PathVariable String code, @RequestBody Faculty faculty) {
-        return ResponseEntity.ok(facultyService.updateFaculty(code, faculty));
-    }
-
-    @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteFaculty(@PathVariable String code) {
-        facultyService.deleteFaculty(code);
-        return ResponseEntity.noContent().build();
     }
 
     @PostMapping("/verify-otp")
@@ -97,9 +71,8 @@ public class FacultyController {
     }
 
     @PostMapping("/forgot-password")
-    public ResponseEntity<ForgotPasswordResponse> forgotPassword(
-            @RequestBody ForgotPasswordRequest forgotPasswordRequest) {
-        String email = forgotPasswordRequest.getEmail();
+    public ResponseEntity<ForgotPasswordResponse> forgotPassword(@RequestHeader("Authorization") String token) {
+        String email = jwtProvider.getUsernameFromToken(token.substring(7)); // Remove "Bearer "
         String responseMessage = forgotPasswordService.forgotPassword(email);
 
         ForgotPasswordResponse response = new ForgotPasswordResponse();
@@ -110,18 +83,19 @@ public class FacultyController {
     }
 
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestBody ResetPasswordRequest resetPasswordRequest) {
-        String email = resetPasswordRequest.getEmail();
+    public ResponseEntity<String> resetPassword(@RequestHeader("Authorization") String token,
+            @RequestBody ResetPasswordRequest resetPasswordRequest) {
+        String email = jwtProvider.getUsernameFromToken(token.substring(7)); // Remove "Bearer "
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/generate-qr")
+    @PostMapping("/generate-qr/{lectureId}")
     public ResponseEntity<QRResponse> generateQRCode(
             @RequestBody LocationRequest locationRequest,
-            @RequestParam Long lectureId,
+            @PathVariable Long lectureId,
             @RequestHeader("Authorization") String token) {
         try {
             QRResponse response = facultyService.generateQRForSession(locationRequest, token.substring(7), lectureId);
@@ -131,8 +105,8 @@ public class FacultyController {
         }
     }
 
-    @GetMapping("/show-qr-again")
-    public ResponseEntity<?> showQRCodeAgain(@RequestParam Long lectureId) {
+    @GetMapping("/show-qr-again/{lectureId}")
+    public ResponseEntity<?> showQRCodeAgain(@RequestHeader("Authorization") String token, @PathVariable Long lectureId) {
         QRData latestQR = qrDataRepository.findTopByLectureIdOrderByCreatedAtDesc(lectureId);
         if (latestQR != null) {
             return ResponseEntity.ok(Collections.singletonMap("qrCode", latestQR.getQrDataBase64()));

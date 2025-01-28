@@ -56,11 +56,6 @@ public class AttendanceServiceImpl implements AttendanceService {
     }
 
     @Override
-    public Attendance createAttendance(Attendance attendance) {
-        return attendanceRepository.save(attendance); // Save the attendance record
-    }
-
-    @Override
     public Attendance updateAttendance(Long id, Attendance attendance) {
         Attendance existingAttendance = getAttendanceById(id); // Fetch existing attendance record
         existingAttendance.setIsPresent(attendance.getIsPresent()); // Update attendance status

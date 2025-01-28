@@ -21,57 +21,50 @@ public class AttendanceController {
     @Autowired
     private AttendanceService attendanceService;
 
-    // Create attendance
-    @PostMapping
-    public ResponseEntity<Attendance> createAttendance(@RequestBody Attendance attendance) {
-        Attendance createdAttendance = attendanceService.createAttendance(attendance);
-        return ResponseEntity.ok(createdAttendance);
-    }
-
     // Update attendance
-    @PutMapping("/{id}")
-    public ResponseEntity<Attendance> updateAttendance(@PathVariable Long id, @RequestBody Attendance attendance) {
+    @PutMapping("/update-attendance/{id}")
+    public ResponseEntity<Attendance> updateAttendance(@RequestHeader("Authorization") String token, @PathVariable Long id, @RequestBody Attendance attendance) {
         Attendance updatedAttendance = attendanceService.updateAttendance(id, attendance);
         return ResponseEntity.ok(updatedAttendance);
     }
 
     // Get attendance by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<Attendance> getAttendanceById(@PathVariable Long id) {
+    @GetMapping("/get-attendance-by-id/{id}")
+    public ResponseEntity<Attendance> getAttendanceById(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         Attendance attendance = attendanceService.getAttendanceById(id);
         return ResponseEntity.ok(attendance);
     }
 
     // Get all attendance records
-    @GetMapping
-    public ResponseEntity<List<Attendance>> getAllAttendance() {
+    @GetMapping("/get-all-attendance")
+    public ResponseEntity<List<Attendance>> getAllAttendance(@RequestHeader("Authorization") String token) {
         List<Attendance> attendanceList = attendanceService.getAllAttendance();
         return ResponseEntity.ok(attendanceList);
     }
 
     // Delete attendance by ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteAttendance(@PathVariable Long id) {
+    @DeleteMapping("/delete-attendance/{id}")
+    public ResponseEntity<String> deleteAttendance(@RequestHeader("Authorization") String token, @PathVariable Long id) {
         attendanceService.deleteAttendance(id);
         return ResponseEntity.ok("Attendance record deleted successfully");
     }
 
     // Additional endpoint: Get attendance by student
-    @GetMapping("/student/{studentId}")
-    public ResponseEntity<List<Attendance>> getAttendanceByStudent(@PathVariable Long studentId) {
+    @GetMapping("/get-attendance-by-student/{studentId}")
+    public ResponseEntity<List<Attendance>> getAttendanceByStudent(@RequestHeader("Authorization") String token, @PathVariable Long studentId) {
         List<Attendance> attendanceList = attendanceService.getAttendanceByStudent(studentId);
         return ResponseEntity.ok(attendanceList);
     }
 
     // Additional endpoint: Get attendance by lecture
-    @GetMapping("/lecture/{lectureId}")
-    public ResponseEntity<List<Attendance>> getAttendanceByLecture(@PathVariable Long lectureId) {
+    @GetMapping("/get-attendance-by-lecture-id/{lectureId}")
+    public ResponseEntity<List<Attendance>> getAttendanceByLecture(@RequestHeader("Authorization") String token, @PathVariable Long lectureId) {
         List<Attendance> attendanceList = attendanceService.getAttendanceByLecture(lectureId);
         return ResponseEntity.ok(attendanceList);
     }
 
     @PostMapping("/mark-attendance")
-    public ResponseEntity<String> markAttendance(@RequestBody AttendanceRequest request) {
+    public ResponseEntity<String> markAttendance(@RequestHeader("Authorization") String token,@RequestBody AttendanceRequest request) {
         try {
             attendanceService.markAttendance(request);
             return ResponseEntity.ok("Attendance marked successfully!");
