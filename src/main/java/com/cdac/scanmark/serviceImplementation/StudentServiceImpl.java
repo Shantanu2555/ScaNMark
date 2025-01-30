@@ -199,10 +199,8 @@ public class StudentServiceImpl implements StudentService {
 
         // Generate Key Pair
         KeyPair keyPair = KeyGeneratorUtil.generateKeyPair();
-        String publicKey =
-        Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
-        String privateKey =
-        Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded());
+        String publicKey = Base64.getEncoder().encodeToString(keyPair.getPublic().getEncoded());
+        String privateKey = Base64.getEncoder().encodeToString(keyPair.getPrivate().getEncoded());
 
         // Save keys
         student.setPublicKey(publicKey);

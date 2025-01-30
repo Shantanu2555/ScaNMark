@@ -16,14 +16,18 @@ public interface FacultyRepository extends JpaRepository<Faculty, String> {
 
     @NonNull
     Optional<Faculty> findById(@NonNull String id) ;
+
     Optional<Faculty> findByName(String facultyName) ;
 
     Optional<Faculty> findByEmail(String email) ;
-    boolean existsByEmail(String email) ;
-    Optional<Faculty> findByFacultyCode(String facultyCode) ;
-    boolean existsByFacultyCode(String facultyCode) ;
-    void deleteByFacultyCode(String facultyCode) ;
 
+    boolean existsByEmail(String email) ;
+
+    Optional<Faculty> findByFacultyCode(String facultyCode) ;
+
+    boolean existsByFacultyCode(String facultyCode) ;
+
+    void deleteByFacultyCode(String facultyCode) ;
 
     @Transactional
     @Modifying

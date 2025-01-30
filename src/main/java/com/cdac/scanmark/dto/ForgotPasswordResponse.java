@@ -1,21 +1,13 @@
 package com.cdac.scanmark.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Data
-@Getter
-@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ForgotPasswordResponse {
     private String message ;
     private boolean success ;
-
-    public ForgotPasswordResponse(String message, boolean success) {
-        this.message = message;
-        this.success = success;
-    }
-
-    public ForgotPasswordResponse() {
-    }
 }

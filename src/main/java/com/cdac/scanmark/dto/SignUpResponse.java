@@ -1,21 +1,13 @@
 package com.cdac.scanmark.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Data
-@Getter
-@Setter
+@NoArgsConstructor
+@AllArgsConstructor
 public class SignUpResponse {
     private String message ;
     private Long id ;
-
-    public SignUpResponse(String message, Long id) {
-        this.message = message;
-        this.id = id;
-    }
-
-    public SignUpResponse() {
-    }
 }

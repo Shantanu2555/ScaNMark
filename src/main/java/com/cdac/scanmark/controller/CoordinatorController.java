@@ -9,7 +9,6 @@ import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.exceptions.ResourceNotFoundException;
 import com.cdac.scanmark.service.*;
 import com.cdac.scanmark.entities.Coordinator;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -25,21 +24,22 @@ import org.springframework.web.bind.annotation.RequestBody;
 @RequestMapping("/api/coordinators")
 public class CoordinatorController {
 
-    @Autowired
     private final CoordinatorService coordinatorService;
-    @Autowired
-    private JWTProvider jwtProvider;
-    @Autowired
-    private ForgotPasswordService forgotPasswordService;
-    @Autowired
-    private AttendanceService attendanceService;
-    @Autowired
-    private StudentService studentService;
-    @Autowired
-    private FacultyService facultyService;
+    private final JWTProvider jwtProvider;
+    private final ForgotPasswordService forgotPasswordService;
+    private final AttendanceService attendanceService;
+    private final StudentService studentService;
+    private final FacultyService facultyService;
 
-    public CoordinatorController(CoordinatorService coordinatorService) {
+    public CoordinatorController(CoordinatorService coordinatorService, JWTProvider jwtProvider,
+            ForgotPasswordService forgotPasswordService, AttendanceService attendanceService,
+            StudentService studentService, FacultyService facultyService) {
         this.coordinatorService = coordinatorService;
+        this.jwtProvider = jwtProvider;
+        this.forgotPasswordService = forgotPasswordService;
+        this.attendanceService = attendanceService;
+        this.studentService = studentService;
+        this.facultyService = facultyService;
     }
 
     @PostMapping("/signin")

@@ -6,9 +6,6 @@ import java.util.List;
 import com.cdac.scanmark.dto.AttendanceRequest;
 import com.cdac.scanmark.entities.Attendance;
 
-import jakarta.validation.ValidationException;
-
-
 public interface AttendanceService {
 
     List<Attendance> getAllAttendance();

@@ -3,7 +3,6 @@ package com.cdac.scanmark.entities;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.*;
-import jakarta.websocket.Decoder.Text;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;

@@ -1,24 +1,14 @@
 package com.cdac.scanmark.dto;
+import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Data
-@Getter
-@Setter
+@AllArgsConstructor
+@NoArgsConstructor
 public class ResetPasswordRequest {
     private String otp;
     private String newPassword;
     private String role ;
-
-    public ResetPasswordRequest(String otp, String newPassword, String role) {
-        this.otp = otp;
-        this.newPassword = newPassword;
-        this.role = role ;
-
-    }
-
-    public ResetPasswordRequest() {
-    }
 }
 

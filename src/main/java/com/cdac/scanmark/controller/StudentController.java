@@ -5,7 +5,6 @@ import com.cdac.scanmark.dto.*;
 import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.service.ForgotPasswordService;
 import com.cdac.scanmark.service.StudentService;
-import com.cdac.scanmark.serviceImplementation.AuthService;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,14 +18,12 @@ public class StudentController {
 
     @Autowired
     private final StudentService studentService;
-    private final AuthService authService;
     private final JWTProvider jwtProvider;
     private final ForgotPasswordService forgotPasswordService;
 
-    public StudentController(StudentService studentService, AuthService authService, JWTProvider jwtProvider,
+    public StudentController(StudentService studentService, JWTProvider jwtProvider,
             ForgotPasswordService forgotPasswordService) {
         this.studentService = studentService;
-        this.authService = authService;
         this.jwtProvider = jwtProvider;
         this.forgotPasswordService = forgotPasswordService;
     }

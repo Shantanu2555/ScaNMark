@@ -46,24 +46,21 @@ public class FacultyServiceImpl implements FacultyService {
     private final LectureRepository lectureRepository;
     private final MailSenderService mailSenderService;
 
-
     public FacultyServiceImpl(QRDataRepository qrDataRepository, LectureRepository lectureRepository,
             QRCodeGenerator qrCodeGenerator,
             JWTProvider jwtProvider, FacultyRepository facultyRepository, PasswordEncoder passwordEncoder,
             PasswordsRepository passwordsRepository, MailSenderService mailSenderService) {
-                
-                this.qrDataRepository = qrDataRepository ;
-                this.lectureRepository = lectureRepository ;
-                this.qrCodeGenerator = qrCodeGenerator ;
-                this.jwtProvider = jwtProvider ;
-                this.facultyRepository = facultyRepository ;
-                this.passwordEncoder = passwordEncoder ;
-                this.passwordsRepository = passwordsRepository ;
-                this.mailSenderService = mailSenderService;
 
-            }
+        this.qrDataRepository = qrDataRepository;
+        this.lectureRepository = lectureRepository;
+        this.qrCodeGenerator = qrCodeGenerator;
+        this.jwtProvider = jwtProvider;
+        this.facultyRepository = facultyRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.passwordsRepository = passwordsRepository;
+        this.mailSenderService = mailSenderService;
 
-        
+    }
 
     @Override
     public List<Faculty> getAllFaculties() {

@@ -29,16 +29,13 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
     @Autowired
     private PasswordsRepository passwordRepository;
     @Autowired
-    private PasswordEncoder passwordEncoder ;
+    private PasswordEncoder passwordEncoder;
 
     @Autowired
-    private PasswordsRepository passwordsRepository ;
+    private StudentRepository studentRepository;
 
     @Autowired
-    private StudentRepository studentRepository ;
-
-    @Autowired
-    private FacultyRepository facultyRepository ;
+    private FacultyRepository facultyRepository;
 
     private static final int OTP_LENGTH = 6;
     private static final long OTP_EXPIRATION_TIME = 300000; // 5 minutes for OTP expiry
@@ -84,7 +81,8 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
 
         String hashedNewPassword = passwordEncoder.encode(newPassword);
 
-        // Fetch the corresponding Passwords record based on email (Student, Faculty, or Coordinator)
+        // Fetch the corresponding Passwords record based on email (Student, Faculty, or
+        // Coordinator)
         Optional<Passwords> passwordRecord = getPasswordRecordByEmail(email);
 
         if (passwordRecord.isPresent()) {
@@ -125,8 +123,6 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
         // If none of the entities match, return empty
         return Optional.empty();
     }
-
-
 
     // Helper method to generate OTP
     private String generateOtp() {

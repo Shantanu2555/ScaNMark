@@ -3,8 +3,6 @@ package com.cdac.scanmark.dto;
 import lombok.*;
 
 @Data
-@Getter
-@Setter
 @AllArgsConstructor
 @NoArgsConstructor
 public class AddFacultyRequest {

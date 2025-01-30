@@ -1,18 +1,5 @@
 package com.cdac.scanmark.security;
 
-//import io.jsonwebtoken.SignatureAlgorithm;
-//import io.jsonwebtoken.security.Keys;
-//
-//public class GenerateKey {
-//    public static void main(String[] args) {
-//        // Generate the 512-bit secret key
-//        System.out.println(Keys.secretKeyFor(SignatureAlgorithm.HS512));
-//    }
-//}
-
-
-
-
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 

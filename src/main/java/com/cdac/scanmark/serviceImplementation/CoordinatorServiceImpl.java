@@ -244,41 +244,44 @@ public class CoordinatorServiceImpl implements CoordinatorService {
     }
 
     @Override
-public Lecture scheduleLecture(ScheduleLectureRequest scheduleLectureRequest) {
-    // Validate Request
-    if (scheduleLectureRequest.getFacultyName() == null || 
-        scheduleLectureRequest.getSubjectName() == null ||
-        scheduleLectureRequest.getLectureTime() == null || 
-        scheduleLectureRequest.getFacultyCode() == null) {
-        throw new IllegalArgumentException("Faculty name, subject name, lecture time, and faculty code must not be null.");
+    public Lecture scheduleLecture(ScheduleLectureRequest scheduleLectureRequest) {
+        // Validate Request
+        if (scheduleLectureRequest.getFacultyName() == null ||
+                scheduleLectureRequest.getSubjectName() == null ||
+                scheduleLectureRequest.getLectureTime() == null ||
+                scheduleLectureRequest.getFacultyCode() == null) {
+            throw new IllegalArgumentException(
+                    "Faculty name, subject name, lecture time, and faculty code must not be null.");
+        }
+
+        // Validate if the faculty exists using the faculty code
+        Optional<Faculty> facultyOptional = facultyRepository
+                .findByFacultyCode(scheduleLectureRequest.getFacultyCode());
+        if (facultyOptional.isEmpty()) {
+            throw new RuntimeException(
+                    "No faculty found with the provided code: " + scheduleLectureRequest.getFacultyCode());
+        }
+        Faculty faculty = facultyOptional.get();
+
+        // Check if the faculty is available at the requested time
+        boolean isFacultyAvailable = lectureRepository.existsByFacultyAndLectureTime(
+                faculty, scheduleLectureRequest.getLectureTime());
+
+        if (isFacultyAvailable) {
+            throw new RuntimeException("The faculty is already scheduled for a lecture at the given time.");
+        }
+
+        // Create a new Lecture object
+        Lecture lecture = new Lecture();
+        lecture.setFacultyName(scheduleLectureRequest.getFacultyName());
+        lecture.setSubjectName(scheduleLectureRequest.getSubjectName());
+        lecture.setLectureTime(scheduleLectureRequest.getLectureTime());
+        lecture.setFaculty(faculty); // Set the faculty entity
+
+        // Save the lecture to the database
+        lecture = lectureRepository.save(lecture);
+
+        return lecture;
     }
-
-    // Validate if the faculty exists using the faculty code
-    Optional<Faculty> facultyOptional = facultyRepository.findByFacultyCode(scheduleLectureRequest.getFacultyCode());
-    if (facultyOptional.isEmpty()) {
-        throw new RuntimeException("No faculty found with the provided code: " + scheduleLectureRequest.getFacultyCode());
-    }
-    Faculty faculty = facultyOptional.get();
-
-    // Check if the faculty is available at the requested time
-    boolean isFacultyAvailable = lectureRepository.existsByFacultyAndLectureTime(
-            faculty, scheduleLectureRequest.getLectureTime());
-
-    if (isFacultyAvailable) {
-        throw new RuntimeException("The faculty is already scheduled for a lecture at the given time.");
-    }
-
-    // Create a new Lecture object
-    Lecture lecture = new Lecture();
-    lecture.setFacultyName(scheduleLectureRequest.getFacultyName());
-    lecture.setSubjectName(scheduleLectureRequest.getSubjectName());
-    lecture.setLectureTime(scheduleLectureRequest.getLectureTime());
-    lecture.setFaculty(faculty); // Set the faculty entity
-
-    // Save the lecture to the database
-    lecture = lectureRepository.save(lecture);
-
-    return lecture;
-}
 
 }

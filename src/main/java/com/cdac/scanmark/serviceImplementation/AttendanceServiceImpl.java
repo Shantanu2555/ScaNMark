@@ -34,12 +34,13 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     private final StudentRepository studentRepository;
 
-    private final LectureRepository lectureRepository ;
+    private final LectureRepository lectureRepository;
 
-    public AttendanceServiceImpl(LectureRepository lectureRepository, AttendanceRepository attendanceRepository, QRDataRepository qrDataRepository,
+    public AttendanceServiceImpl(LectureRepository lectureRepository, AttendanceRepository attendanceRepository,
+            QRDataRepository qrDataRepository,
             StudentRepository studentRepository) {
         this.attendanceRepository = attendanceRepository;
-        this.lectureRepository = lectureRepository ;
+        this.lectureRepository = lectureRepository;
         this.studentRepository = studentRepository;
         this.qrDataRepository = qrDataRepository;
     }
@@ -99,7 +100,7 @@ public class AttendanceServiceImpl implements AttendanceService {
                 .orElseThrow(() -> new ValidationException("Student not found for prn: " + request.getStudentPrn()));
 
         // Fetch lecture
-        Lecture lecture = lectureRepository.findById(lectureId) 
+        Lecture lecture = lectureRepository.findById(lectureId)
                 .orElseThrow(() -> new ValidationException("Student not found for prn: " + request.getStudentPrn()));
 
         // Fetch QR Data for the lecture
@@ -133,8 +134,8 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     public boolean verifySignature(String signedQrContent, Long studentPrn) {
         // Fetch the student's public key from the database
-        Student student = studentRepository.findByPrn(studentPrn).
-            orElseThrow(() -> new ValidationException("Student not found for prn: " + studentPrn));
+        Student student = studentRepository.findByPrn(studentPrn)
+                .orElseThrow(() -> new ValidationException("Student not found for prn: " + studentPrn));
         String publicKey = student.getPublicKey();
         PublicKey decodedPublicKey = KeyGeneratorUtil.decodePublicKey(publicKey);
 
@@ -144,8 +145,6 @@ public class AttendanceServiceImpl implements AttendanceService {
             String[] parts = signedQrContent.split("\\|");
             String originalContent = String.join("|", parts[0], parts[1], parts[2], parts[3]); // Remove signature part
             signature.update(originalContent.getBytes(StandardCharsets.UTF_8));
-
-            //TODO check if decoding is required
             byte[] signedData = Base64.getDecoder().decode(parts[4]); // Decode the signature
             return signature.verify(signedData); // Validate signature
         } catch (Exception e) {

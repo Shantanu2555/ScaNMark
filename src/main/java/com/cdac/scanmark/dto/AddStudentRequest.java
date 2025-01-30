@@ -2,8 +2,6 @@ package com.cdac.scanmark.dto;
 
 import lombok.*;
 
-@Getter
-@Setter
 @Data
 @AllArgsConstructor
 @NoArgsConstructor

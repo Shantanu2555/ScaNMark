@@ -13,7 +13,7 @@ import com.cdac.scanmark.util.JwtUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import com.cdac.scanmark.entities.Passwords ;
+import com.cdac.scanmark.entities.Passwords;
 
 @Service
 public class AuthService {
@@ -36,8 +36,8 @@ public class AuthService {
     private JwtUtil jwtUtil;
 
     public AuthService(StudentRepository studentRepository, FacultyRepository facultyRepository,
-                       CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder,
-                       PasswordsRepository passwordsRepository, JwtUtil jwtUtil) {
+            CoordinatorRepository coordinatorRepository, PasswordEncoder passwordEncoder,
+            PasswordsRepository passwordsRepository, JwtUtil jwtUtil) {
         this.studentRepository = studentRepository;
         this.facultyRepository = facultyRepository;
         this.coordinatorRepository = coordinatorRepository;
@@ -59,26 +59,28 @@ public class AuthService {
                         .orElseThrow(() -> new RuntimeException("Invalid Student email"));
                 yield passwordsRepository.findByStudentPrn(student.getPrn())
                         .map(Passwords::getPassword)
-                        .orElseThrow(() -> new RuntimeException("Password not found for Student PRN: " + student.getPrn()));
+                        .orElseThrow(
+                                () -> new RuntimeException("Password not found for Student PRN: " + student.getPrn()));
             }
             case "faculty" -> {
                 Faculty faculty = facultyRepository.findByEmail(email)
                         .orElseThrow(() -> new RuntimeException("Invalid Faculty email"));
                 yield passwordsRepository.findByFacultyFacultyCode(faculty.getFacultyCode())
                         .map(Passwords::getPassword)
-                        .orElseThrow(() -> new RuntimeException("Password not found for Faculty code: " + faculty.getFacultyCode()));
+                        .orElseThrow(() -> new RuntimeException(
+                                "Password not found for Faculty code: " + faculty.getFacultyCode()));
             }
             case "coordinator" -> {
                 Coordinator coordinator = coordinatorRepository.findByEmail(email)
                         .orElseThrow(() -> new RuntimeException("Invalid Coordinator email"));
                 yield passwordsRepository.findByCoordinatorId(coordinator.getId())
                         .map(Passwords::getPassword)
-                        .orElseThrow(() -> new RuntimeException("Password not found for Coordinator ID: " + coordinator.getId()));
+                        .orElseThrow(() -> new RuntimeException(
+                                "Password not found for Coordinator ID: " + coordinator.getId()));
             }
             default -> throw new RuntimeException("Invalid role for password lookup");
         };
     }
-
 
     public LoginResponse login(LoginRequest loginRequest) {
         String email = loginRequest.getEmail();
@@ -125,4 +127,3 @@ public class AuthService {
         }
     }
 }
-
