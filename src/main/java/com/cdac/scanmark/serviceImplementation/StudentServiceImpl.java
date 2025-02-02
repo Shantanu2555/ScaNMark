@@ -12,6 +12,7 @@ import com.cdac.scanmark.repository.PasswordsRepository;
 import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.MailSenderService;
 import com.cdac.scanmark.service.StudentService;
+import com.cdac.scanmark.util.JwtUtil;
 import com.cdac.scanmark.util.KeyGeneratorUtil;
 
 import java.util.Base64;
@@ -33,14 +34,16 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordsRepository passwordsRepository;
     private final JWTProvider jwtProvider;
     private final MailSenderService mailSenderService;
+    private final JwtUtil jwtUtil ;
 
     public StudentServiceImpl(StudentRepository studentRepository, PasswordEncoder passwordEncoder,
-            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService) {
+            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService, JwtUtil jwtUtil) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
         this.jwtProvider = jwtProvider;
         this.mailSenderService = mailSenderService;
+        this.jwtUtil = jwtUtil ;
     }
 
     @Override
@@ -123,6 +126,15 @@ public class StudentServiceImpl implements StudentService {
 
         // Send OTP email (logic to be implemented in mail service)
         mailSenderService.sendOtp(student.getEmail(), otp);
+    }
+
+    @Override
+    public Long getPrnThroughToken(String token){
+        String email = jwtUtil.extractUsername(token) ;
+        Student student = studentRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("Student not found"));
+
+        return student.getPrn() ;
     }
 
     @Transactional

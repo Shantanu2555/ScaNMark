@@ -26,4 +26,6 @@ public interface StudentService {
     void sendOtp(Student student);
 
     String verifyOtp(OtpVerificationRequest request);
+
+    Long getPrnThroughToken(String token) ;
 }

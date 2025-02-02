@@ -3,8 +3,10 @@ package com.cdac.scanmark.controller;
 import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
 import com.cdac.scanmark.entities.Student;
+import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.ForgotPasswordService;
 import com.cdac.scanmark.service.StudentService;
+import com.cdac.scanmark.util.JwtUtil;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -16,7 +18,6 @@ import java.util.List;
 @RequestMapping("/api/students")
 public class StudentController {
 
-    @Autowired
     private final StudentService studentService;
     private final JWTProvider jwtProvider;
     private final ForgotPasswordService forgotPasswordService;
@@ -31,6 +32,15 @@ public class StudentController {
     @GetMapping("/get-all-students")
     public ResponseEntity<List<Student>> getAllStudents(@RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(studentService.getAllStudents());
+    }
+
+    @GetMapping("/get-prn-through-token")
+    public Long getMethodName(@RequestHeader("Authorization") String authHeader) {
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            String token = authHeader.substring(7); // Remove "Bearer " prefix
+            return studentService.getPrnThroughToken(token);
+        }
+        throw new RuntimeException("Invalid Authorization header");
     }
 
     @GetMapping("/{prn}")

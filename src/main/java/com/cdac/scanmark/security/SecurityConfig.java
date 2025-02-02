@@ -92,7 +92,8 @@ public class SecurityConfig {
                         .requestMatchers(
                         "/api/students/profile",
                         "/api/students/reset-password", 
-                        "/api/attendance/mark-attendance"
+                        "/api/attendance/mark-attendance",
+                        "/api/students/get-prn-through-token"
                         ).hasRole("STUDENT")  // Ensure only students can access this endpoint
                         .anyRequest().authenticated()  // Secure all other endpoints
                 )
