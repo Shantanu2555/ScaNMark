@@ -92,10 +92,10 @@ public class FacultyController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/generate-qr/{lectureId}")
+    @PostMapping("/generate-qr")
     public ResponseEntity<QRResponse> generateQRCode(
             @RequestBody LocationRequest locationRequest,
-            @PathVariable Long lectureId,
+            @RequestParam Long lectureId,
             @RequestHeader("Authorization") String token) {
         try {
             QRResponse response = facultyService.generateQRForSession(locationRequest, token.substring(7), lectureId);

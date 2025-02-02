@@ -28,8 +28,8 @@ public class StudentController {
         this.forgotPasswordService = forgotPasswordService;
     }
 
-    @GetMapping
-    public ResponseEntity<List<Student>> getAllStudents() {
+    @GetMapping("/get-all-students")
+    public ResponseEntity<List<Student>> getAllStudents(@RequestHeader("Authorization") String token) {
         return ResponseEntity.ok(studentService.getAllStudents());
     }
 

@@ -20,5 +20,3 @@ public class ConfigController {
         return ResponseEntity.ok(ngrok);
     }
 }
-
-
