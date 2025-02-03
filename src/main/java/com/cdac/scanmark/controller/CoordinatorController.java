@@ -81,9 +81,9 @@ public class CoordinatorController {
 
     // Reset Password
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestHeader("Authorization") String token,
+    public ResponseEntity<String> resetPassword(
             @RequestBody ResetPasswordRequest resetPasswordRequest) {
-        String email = jwtProvider.getUsernameFromToken(token.substring(7)); // Remove "Bearer "
+        String email = resetPasswordRequest.getEmail() ;
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);

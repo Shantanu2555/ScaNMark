@@ -3,12 +3,9 @@ package com.cdac.scanmark.controller;
 import com.cdac.scanmark.config.JWTProvider;
 import com.cdac.scanmark.dto.*;
 import com.cdac.scanmark.entities.Student;
-import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.ForgotPasswordService;
 import com.cdac.scanmark.service.StudentService;
-import com.cdac.scanmark.util.JwtUtil;
 
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -109,9 +106,9 @@ public class StudentController {
 
     // Reset Password
     @PostMapping("/reset-password")
-    public ResponseEntity<String> resetPassword(@RequestHeader("Authorization") String token,
+    public ResponseEntity<String> resetPassword(
             @RequestBody ResetPasswordRequest resetPasswordRequest) {
-        String email = jwtProvider.getUsernameFromToken(token.substring(7)); // Remove "Bearer "
+        String email = resetPasswordRequest.getEmail() ;
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
         String response = forgotPasswordService.resetPassword(email, otp, newPassword);

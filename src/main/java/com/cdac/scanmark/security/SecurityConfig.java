@@ -58,8 +58,11 @@ public class SecurityConfig {
                                 "/student-dashboard.html", 
                                 "/config/ngrok-url",
                                 "/favicon.ico", 
-                                "/api/lecture/lectures"
-                                
+                                "/api/lecture/lectures",
+                                "/api/faculty/reset-password",
+                                "/api/students/reset-password",
+                                "/api/coordinators/reset-password",
+                                "/api/faculty/forgot-password"
                                 ).permitAll()  // Allow auth and login endpoints
                         .requestMatchers(
                                 "/api/coordinators/profile",
@@ -70,7 +73,6 @@ public class SecurityConfig {
                                 "/api/coordinators/deleteStudent/{prn}",
                                 "/api/coordinators/updateFaculty/{facultyCode}",
                                 "/api/coordinators/deleteFaculty/{facultyCode}", 
-                                "/api/coordinators/reset-password", 
                                 "/api/coordinators/schedule-lecture", 
                                 "/api/coordinators/add-faculty", 
                                 "/api/coordinators/add-student", 
@@ -85,13 +87,11 @@ public class SecurityConfig {
                                 ).hasRole("COORDINATOR")  // Ensure only coordinators can access this endpoint
                         .requestMatchers(
                         "/api/faculty/profile",          
-                        "/api/faculty/show-qr-again/{lectureId}", 
-                        "/api/faculty/reset-password", 
+                        "/api/faculty/show-qr-again/{lectureId}",
                         "/api/lecture/lectures",
                         "/api/faculty/generate-qr/{lectureId}").hasRole("FACULTY")  // Ensure only faculty can access this endpoint
                         .requestMatchers(
-                        "/api/students/profile",
-                        "/api/students/reset-password", 
+                        "/api/students/profile", 
                         "/api/attendance/mark-attendance",
                         "/api/students/get-prn-through-token"
                         ).hasRole("STUDENT")  // Ensure only students can access this endpoint
