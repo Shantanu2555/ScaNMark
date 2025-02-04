@@ -5,6 +5,7 @@ import java.security.PublicKey;
 import java.security.Signature;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.YearMonth;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
@@ -176,6 +177,32 @@ public class AttendanceServiceImpl implements AttendanceService {
         double distance = EARTH_RADIUS * c * 1000; // Convert to meters
 
         return distance <= 50; // Return true if within 50 meters
+    }
+
+    @Override
+    public List<Attendance> getAttendanceByPrn(Long prn){
+        List<Attendance> attendanceList = attendanceRepository.findByStudentPrn(prn) ;
+        return attendanceList ;
+    }
+
+    @Override
+    public List<Attendance> getAttendanceByStudentName(String name){
+        List<Attendance> attendanceList = attendanceRepository.findByStudentName(name) ;
+        return attendanceList ;
+    }
+
+    @Override
+    public List<Attendance> getTodaysAttendance(){
+        return attendanceRepository.findByLectureDate(LocalDate.now()) ;
+    }
+
+    @Override
+    public List<Attendance> getCurrentMonthAttendance() {
+        YearMonth currentMonth = YearMonth.now();
+        LocalDate startOfMonth = currentMonth.atDay(1);
+        LocalDate endOfMonth = currentMonth.atEndOfMonth();
+        
+        return attendanceRepository.findByMonth(startOfMonth, endOfMonth);
     }
 
 }

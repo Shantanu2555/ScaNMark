@@ -24,4 +24,12 @@ public interface AttendanceService {
 
     void markAttendance(AttendanceRequest request) ;
 
+    List<Attendance> getAttendanceByPrn(Long prn) ;
+    
+    List<Attendance> getAttendanceByStudentName(String name) ;
+
+    List<Attendance> getTodaysAttendance() ;
+
+    List<Attendance> getCurrentMonthAttendance() ;
+
 }

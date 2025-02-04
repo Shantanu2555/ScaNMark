@@ -12,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
+
 @RestController
 @RequestMapping("/api/attendance")
 public class AttendanceController {
@@ -70,4 +71,30 @@ public class AttendanceController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         }
     }
+
+    //getting attendance records through prn
+    @GetMapping("/attendance-by-prn/{prn}")
+    public ResponseEntity<List<Attendance>> getAttendanceByPrn(@RequestHeader("Authorization") String token, @PathVariable Long prn) {
+        List<Attendance> attendanceList = attendanceService.getAttendanceByPrn(prn) ;
+        return ResponseEntity.ok(attendanceList) ;
+    }
+
+    @GetMapping("/attendance-by-student-name/{name}")
+    public ResponseEntity<List<Attendance>> getAttendanceByName(@RequestHeader("Authorization") String token, @PathVariable String name) {
+        List<Attendance> attendanceList = attendanceService.getAttendanceByStudentName(name) ;
+        return ResponseEntity.ok(attendanceList) ;
+    }
+
+    @GetMapping("/todays-attendance")
+    public List<Attendance> getMethodName(@RequestHeader("Authorization") String token) {
+        return attendanceService.getTodaysAttendance();
+    }
+
+    @GetMapping("/current-months-attendance")
+    public List<Attendance> getCurrentMonthAttendance(@RequestHeader("Authorization") String token) {
+        return attendanceService.getCurrentMonthAttendance();
+    }
+    
+    
+    
 }

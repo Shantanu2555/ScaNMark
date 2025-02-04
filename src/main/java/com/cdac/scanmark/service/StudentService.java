@@ -3,6 +3,7 @@ package com.cdac.scanmark.service;
 import com.cdac.scanmark.dto.AddStudentRequest;
 import com.cdac.scanmark.dto.LoginRequest;
 import com.cdac.scanmark.dto.OtpVerificationRequest;
+import com.cdac.scanmark.entities.Attendance;
 import com.cdac.scanmark.entities.Student;
 import java.util.List;
 import java.util.Map;

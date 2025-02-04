@@ -40,6 +40,7 @@ public class SecurityConfig {
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
                 .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/**",
                                 "/api/coordinators/signup",
@@ -85,7 +86,11 @@ public class SecurityConfig {
                                 "/api/attendance/get-attendance-by-student/{studentId}", 
                                 "/api/attendance/get-attendance-by-lecture-id/{lectureId}", 
                                 "/api/faculty/get-all-faculties", 
-                                "/api/students/get-all-students"
+                                "/api/students/get-all-students",
+                                "/api/attendance/attendance-by-prn/{prn}",
+                                "/api/attendance/attendance-by-student-name/{name}",
+                                "/api/attendance/current-months-attendance",
+                                "/api/attendance/todays-attendance"
                                 ).hasRole("COORDINATOR")  // Ensure only coordinators can access this endpoint
                         .requestMatchers(
                         "/api/faculty/profile",          
