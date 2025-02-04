@@ -16,7 +16,7 @@ import java.util.Optional;
 public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     @NonNull
-    Optional<Lecture> findById(@NonNull Long id) ;
+    Optional<Lecture> findById(@NonNull Long id);
 
     @Query("SELECT l FROM Lecture l WHERE l.faculty.facultyCode = :facultyCode")
     List<Lecture> findByFacultyCode(@Param("facultyCode") String facultyCode);
@@ -25,4 +25,12 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     boolean existsByFacultyAndLectureTime(Faculty faculty, LocalDateTime lectureTime);
 
+    @Query("SELECT COUNT(l) FROM Lecture l")
+    int countTotalLectures();
+
+    @Query("SELECT DISTINCT l.subjectName FROM Lecture l")
+    List<String> findAllSubjects();
+
+    @Query("SELECT COUNT(l) FROM Lecture l WHERE l.subjectName = :subjectName")
+    int countScheduledLecturesBySubject(@Param("subjectName") String subjectName);
 }

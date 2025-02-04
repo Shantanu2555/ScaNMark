@@ -86,7 +86,7 @@ public class CoordinatorController {
         String email = resetPasswordRequest.getEmail() ;
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
-        String response = forgotPasswordService.resetPassword(email, otp, newPassword);
+        String response = forgotPasswordService.resetPassword(email, otp, newPassword, "ROLE_COORDINATOR");
         return ResponseEntity.ok(response);
     }
 

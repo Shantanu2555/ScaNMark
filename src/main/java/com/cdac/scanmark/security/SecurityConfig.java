@@ -62,7 +62,9 @@ public class SecurityConfig {
                                 "/api/faculty/reset-password",
                                 "/api/students/reset-password",
                                 "/api/coordinators/reset-password",
-                                "/api/faculty/forgot-password"
+                                "/api/faculty/forgot-password",
+                                "/api/students/{prn}/attendance-percentage",
+                                "/api/students/{prn}/attendance-percentage/subject-wise"
                                 ).permitAll()  // Allow auth and login endpoints
                         .requestMatchers(
                                 "/api/coordinators/profile",

@@ -8,8 +8,8 @@ import com.cdac.scanmark.service.StudentService;
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/students")
@@ -108,11 +108,22 @@ public class StudentController {
     @PostMapping("/reset-password")
     public ResponseEntity<String> resetPassword(
             @RequestBody ResetPasswordRequest resetPasswordRequest) {
-        String email = resetPasswordRequest.getEmail() ;
+        String email = resetPasswordRequest.getEmail();
         String otp = resetPasswordRequest.getOtp();
         String newPassword = resetPasswordRequest.getNewPassword();
-        String response = forgotPasswordService.resetPassword(email, otp, newPassword);
+        String response = forgotPasswordService.resetPassword(email, otp, newPassword, "ROLE_STUDENT");
         return ResponseEntity.ok(response);
     }
 
+    @GetMapping("/{prn}/attendance-percentage")
+    public ResponseEntity<?> getAttendancePercentage(@PathVariable Long prn) {
+        Map<String, Object> response = studentService.getAttendancePercentage(prn);
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{prn}/attendance-percentage/subject-wise")
+    public ResponseEntity<Map<String, Double>> getSubjectWiseAttendance(@PathVariable Long prn) {
+        Map<String, Double> attendance = studentService.getSubjectWiseAttendance(prn);
+        return ResponseEntity.ok(attendance);
+    }
 }

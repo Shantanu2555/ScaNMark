@@ -8,6 +8,8 @@ import com.cdac.scanmark.dto.LoginRequest;
 import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Student;
 import com.cdac.scanmark.entities.Passwords;
+import com.cdac.scanmark.repository.AttendanceRepository;
+import com.cdac.scanmark.repository.LectureRepository;
 import com.cdac.scanmark.repository.PasswordsRepository;
 import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.MailSenderService;
@@ -16,6 +18,7 @@ import com.cdac.scanmark.util.JwtUtil;
 import com.cdac.scanmark.util.KeyGeneratorUtil;
 
 import java.util.Base64;
+import java.util.HashMap;
 
 import jakarta.transaction.Transactional;
 
@@ -25,25 +28,31 @@ import org.springframework.stereotype.Service;
 import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Service
 public class StudentServiceImpl implements StudentService {
 
     private final StudentRepository studentRepository;
+    private final LectureRepository lectureRepository;
     private final PasswordEncoder passwordEncoder;
     private final PasswordsRepository passwordsRepository;
     private final JWTProvider jwtProvider;
     private final MailSenderService mailSenderService;
-    private final JwtUtil jwtUtil ;
+    private final JwtUtil jwtUtil;
+    private final AttendanceRepository attendanceRepository;
 
     public StudentServiceImpl(StudentRepository studentRepository, PasswordEncoder passwordEncoder,
-            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService, JwtUtil jwtUtil) {
+            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService,
+            JwtUtil jwtUtil, LectureRepository lectureRepository, AttendanceRepository attendanceRepository) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
         this.jwtProvider = jwtProvider;
         this.mailSenderService = mailSenderService;
-        this.jwtUtil = jwtUtil ;
+        this.jwtUtil = jwtUtil;
+        this.lectureRepository = lectureRepository;
+        this.attendanceRepository = attendanceRepository;
     }
 
     @Override
@@ -129,12 +138,12 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
-    public Long getPrnThroughToken(String token){
-        String email = jwtUtil.extractUsername(token) ;
+    public Long getPrnThroughToken(String token) {
+        String email = jwtUtil.extractUsername(token);
         Student student = studentRepository.findByEmail(email)
                 .orElseThrow(() -> new RuntimeException("Student not found"));
 
-        return student.getPrn() ;
+        return student.getPrn();
     }
 
     @Transactional
@@ -219,6 +228,50 @@ public class StudentServiceImpl implements StudentService {
         student.setPrivateKey(privateKey);
 
         studentRepository.save(student);
+    }
+
+    @Override
+    public Map<String, Object> getAttendancePercentage(Long prn) {
+        int totalLecturesConducted = lectureRepository.countTotalLectures();
+
+        int totalLecturesAttended = attendanceRepository.countByStudentPrn(prn);
+
+        double attendancePercentage = (totalLecturesConducted == 0) ? 0.0
+                : ((double) totalLecturesAttended / totalLecturesConducted) * 100;
+
+        // Step 4: Prepare response
+        Map<String, Object> response = new HashMap<>();
+        response.put("studentPrn", prn);
+        response.put("totalLectures", totalLecturesConducted);
+        response.put("attendedLectures", totalLecturesAttended);
+        response.put("attendancePercentage", attendancePercentage);
+
+        return response;
+    }
+
+    @Override
+    public Map<String, Double> getSubjectWiseAttendance(Long studentPrn) {
+        Map<String, Double> subjectWiseAttendance = new HashMap<>();
+
+        // Step 1: Get all subjects from the lectures table
+        List<String> subjects = lectureRepository.findAllSubjects();
+
+        for (String subject : subjects) {
+            // Step 2: Count total scheduled lectures for the subject
+            int totalLectures = lectureRepository.countScheduledLecturesBySubject(subject);
+
+            // Step 3: Count total attended lectures by student for the subject
+            int attendedLectures = attendanceRepository.countAttendedLecturesByStudentAndSubject(studentPrn, subject);
+
+            // Step 4: Calculate attendance percentage
+            double attendancePercentage = (totalLectures == 0) ? 0
+                    : ((double) attendedLectures / totalLectures) * 100;
+
+            // Step 5: Store in response map
+            subjectWiseAttendance.put(subject, attendancePercentage);
+        }
+
+        return subjectWiseAttendance;
     }
 
 }
