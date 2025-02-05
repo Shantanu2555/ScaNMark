@@ -5,6 +5,8 @@ import com.cdac.scanmark.dto.LoginRequest;
 import com.cdac.scanmark.dto.OtpVerificationRequest;
 import com.cdac.scanmark.entities.Student;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 public interface StudentService {
     List<Student> getAllStudents();
@@ -26,4 +28,8 @@ public interface StudentService {
     void sendOtp(Student student);
 
     String verifyOtp(OtpVerificationRequest request);
+
+    Map<String, Object> getAttendancePercentage(Long prn);
+
+    Map<String, Double> getSubjectWiseAttendance(Long studentPrn);
 }

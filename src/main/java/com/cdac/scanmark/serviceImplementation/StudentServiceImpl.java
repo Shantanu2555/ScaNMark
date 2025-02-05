@@ -13,6 +13,8 @@ import com.cdac.scanmark.repository.StudentRepository;
 import com.cdac.scanmark.service.MailSenderService;
 import com.cdac.scanmark.service.StudentService;
 import com.cdac.scanmark.util.KeyGeneratorUtil;
+import com.cdac.scanmark.repository.LectureRepository;
+import com.cdac.scanmark.repository.AttendanceRepository;
 
 import java.util.Base64;
 
@@ -24,6 +26,8 @@ import org.springframework.stereotype.Service;
 import java.security.KeyPair;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Service
 public class StudentServiceImpl implements StudentService {
@@ -33,14 +37,19 @@ public class StudentServiceImpl implements StudentService {
     private final PasswordsRepository passwordsRepository;
     private final JWTProvider jwtProvider;
     private final MailSenderService mailSenderService;
+    private final AttendanceRepository attendanceRepository;
+    private final LectureRepository lectureRepository;
 
     public StudentServiceImpl(StudentRepository studentRepository, PasswordEncoder passwordEncoder,
-            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService) {
+            PasswordsRepository passwordsRepository, JWTProvider jwtProvider, MailSenderService mailSenderService,
+            AttendanceRepository attendanceRepository, LectureRepository lectureRepository) {
         this.studentRepository = studentRepository;
         this.passwordEncoder = passwordEncoder;
         this.passwordsRepository = passwordsRepository;
         this.jwtProvider = jwtProvider;
         this.mailSenderService = mailSenderService;
+        this.attendanceRepository = attendanceRepository;
+        this.lectureRepository=lectureRepository;
     }
 
     @Override
@@ -113,6 +122,25 @@ public class StudentServiceImpl implements StudentService {
     }
 
     @Override
+    public Map<String, Object> getAttendancePercentage(Long prn) {
+        int totalLecturesConducted = lectureRepository.countTotalLectures();
+
+        int totalLecturesAttended = attendanceRepository.countByStudentPrn(prn);
+
+        double attendancePercentage = (totalLecturesConducted == 0) ? 0.0
+                : ((double) totalLecturesAttended / totalLecturesConducted) * 100;
+
+        // Step 4: Prepare response
+        Map<String, Object> response = new HashMap<>();
+        response.put("studentPrn", prn);
+        response.put("totalLectures", totalLecturesConducted);
+        response.put("attendedLectures", totalLecturesAttended);
+        response.put("attendancePercentage", attendancePercentage);
+
+        return response;
+    }
+
+    @Override
     public void sendOtp(Student student) {
         // Generate OTP and expiration
         String otp = String.valueOf((int) (Math.random() * 900000) + 100000); // 6-digit OTP
@@ -149,6 +177,31 @@ public class StudentServiceImpl implements StudentService {
         studentRepository.save(student);
 
         return "Student verified successfully";
+    }
+
+    @Override
+    public Map<String, Double> getSubjectWiseAttendance(Long studentPrn) {
+        Map<String, Double> subjectWiseAttendance = new HashMap<>();
+
+        // Step 1: Get all subjects from the lectures table
+        List<String> subjects = lectureRepository.findAllSubjects();
+
+        for (String subject : subjects) {
+            // Step 2: Count total scheduled lectures for the subject
+            int totalLectures = lectureRepository.countScheduledLecturesBySubject(subject);
+
+            // Step 3: Count total attended lectures by student for the subject
+            int attendedLectures = attendanceRepository.countAttendedLecturesByStudentAndSubject(studentPrn, subject);
+
+            // Step 4: Calculate attendance percentage
+            double attendancePercentage = (totalLectures == 0) ? 0
+                    : ((double) attendedLectures / totalLectures) * 100;
+
+            // Step 5: Store in response map
+            subjectWiseAttendance.put(subject, attendancePercentage);
+        }
+
+        return subjectWiseAttendance;
     }
 
     @Override

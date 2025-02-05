@@ -68,7 +68,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
     }
 
     @Override
-    public String resetPassword(String email, String otp, String newPassword) {
+    public String resetPassword(String email, String otp, String newPassword,String role) {
         // Validate OTP
         OtpData otpData = otpStorage.get(email);
         if (otpData == null || !otpData.getOtp().equals(otp)) {
@@ -83,7 +83,7 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
 
         // Fetch the corresponding Passwords record based on email (Student, Faculty, or
         // Coordinator)
-        Optional<Passwords> passwordRecord = getPasswordRecordByEmail(email);
+        Optional<Passwords> passwordRecord = getPasswordRecordByEmail(email,role);
 
         if (passwordRecord.isPresent()) {
             // Update the password
@@ -98,30 +98,24 @@ public class ForgotPasswordServiceImpl implements ForgotPasswordService {
     }
 
     // Helper method to fetch the corresponding Passwords record
-    private Optional<Passwords> getPasswordRecordByEmail(String email) {
+    private Optional<Passwords> getPasswordRecordByEmail(String email,String role) {
         // First, try to find the student by email
-        Optional<Student> studentOptional = studentRepository.findByEmail(email);
-        if (studentOptional.isPresent()) {
-            // Fetch password record using student_prn
-            return passwordRepository.findByStudentPrn(studentOptional.get().getPrn());
+       switch (role) {
+            case "ROLE_STUDENT":
+                return studentRepository.findByEmail(email)
+                        .flatMap(student -> passwordRepository.findByStudentPrn(student.getPrn()));
+    
+            case "ROLE_FACULTY":
+                return facultyRepository.findByEmail(email)
+                        .flatMap(faculty -> passwordRepository.findByFacultyFacultyCode(faculty.getFacultyCode()));
+    
+            case "ROLE_COORDINATOR":
+                return coordinatorRepository.findByEmail(email)
+                        .flatMap(coordinator -> passwordRepository.findByCoordinatorId(coordinator.getId()));
+    
+            default:
+                return Optional.empty();
         }
-
-        // If not found, try to find the faculty by email
-        Optional<Faculty> facultyOptional = facultyRepository.findByEmail(email);
-        if (facultyOptional.isPresent()) {
-            // Fetch password record using faculty_code
-            return passwordRepository.findByFacultyFacultyCode(facultyOptional.get().getFacultyCode());
-        }
-
-        // If not found, try to find the coordinator by email
-        Optional<Coordinator> coordinatorOptional = coordinatorRepository.findByEmail(email);
-        if (coordinatorOptional.isPresent()) {
-            // Fetch password record using coordinator_id
-            return passwordRepository.findByCoordinatorId(coordinatorOptional.get().getId());
-        }
-
-        // If none of the entities match, return empty
-        return Optional.empty();
     }
 
     // Helper method to generate OTP

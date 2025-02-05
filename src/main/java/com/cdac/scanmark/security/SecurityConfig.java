@@ -39,17 +39,24 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
+        .cors().and()
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(authz -> authz
                         .requestMatchers("/api/auth/**",
                                 "/api/coordinators/signup",
                                 "/api/coordinators/verify-otp",
                                 "/api/coordinators/forgot-password",
+                                "/api/coordinators/reset-password",
                                 "/api/students/signin",
                                 "/api/students/verify-otp",
                                 "/api/students/forgot-password",
+                                "/api/students/reset-password",
+                                "/api/faculty/forgot-password",
+                                "/api/faculty/reset-password",
                                 "/api/faculty/signin",
                                 "/api/faculty/verify-otp", 
+                                "/api/students/{prn}/attendance-percentage",
+                                "/api/students/{prn}/attendance-percentage/subject-wise",
                                 "/api/coordinators/signin",
                                 "/attendance-dashboard.html",  
                                 "/faculty-login.html", 
@@ -70,7 +77,8 @@ public class SecurityConfig {
                                 "/api/coordinators/deleteStudent/{prn}",
                                 "/api/coordinators/updateFaculty/{facultyCode}",
                                 "/api/coordinators/deleteFaculty/{facultyCode}", 
-                                "/api/coordinators/reset-password", 
+                                // "/api/coordinators/forgot-password",
+                                //  "/api/coordinators/reset-password", 
                                 "/api/coordinators/schedule-lecture", 
                                 "/api/coordinators/add-faculty", 
                                 "/api/coordinators/add-student", 
@@ -86,11 +94,12 @@ public class SecurityConfig {
                         "/api/faculty/generate-qr/{lectureId}", 
                         "/show-qr-again/{lectureId}",
                         "/api/faculty/get-all-faculties", 
-                        "/api/faculty/reset-password", 
+                        //  "/api/faculty/forgot-password", 
+                        // "/api/faculty/reset-password", 
                         "/api/lecture/lectures").hasRole("FACULTY")  // Ensure only faculty can access this endpoint
                         .requestMatchers(
                         "/api/students/profile",
-                        "/api/students/reset-password", 
+                        // "/api/students/reset-password", 
                         "/api/attendance/mark-attendance" 
                         ).hasRole("STUDENT")  // Ensure only students can access this endpoint
                         .anyRequest().authenticated()  // Secure all other endpoints

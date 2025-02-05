@@ -45,6 +45,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         this.qrDataRepository = qrDataRepository;
     }
 
+
     @Override
     public List<Attendance> getAllAttendance() {
         return attendanceRepository.findAll(); // Fetch all attendance records

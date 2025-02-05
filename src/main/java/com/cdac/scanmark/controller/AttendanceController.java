@@ -9,7 +9,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.util.Map;
+import java.util.HashMap;
 import java.util.List;
 
 @RestController
@@ -61,13 +62,34 @@ public class AttendanceController {
         return ResponseEntity.ok(attendanceList);
     }
 
+    // @PostMapping("/mark-attendance")
+    // public ResponseEntity<String> markAttendance(@RequestHeader("Authorization") String token,@RequestBody AttendanceRequest request) {
+    //     try {
+    //         attendanceService.markAttendance(request);
+    //         return ResponseEntity.ok("Attendance marked successfully!");
+    //     } catch (ValidationException e) {
+    //         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+    //     }
+    // }
+
+@CrossOrigin(origins = "http://localhost:3000") 
     @PostMapping("/mark-attendance")
-    public ResponseEntity<String> markAttendance(@RequestHeader("Authorization") String token,@RequestBody AttendanceRequest request) {
-        try {
-            attendanceService.markAttendance(request);
-            return ResponseEntity.ok("Attendance marked successfully!");
-        } catch (ValidationException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
-        }
+public ResponseEntity<Map<String, Object>> markAttendance(@RequestHeader("Authorization") String token, 
+                                                           @RequestBody AttendanceRequest request) {
+    Map<String, Object> response = new HashMap<>();
+    try {
+        // Call service method to mark attendance
+        attendanceService.markAttendance(request);
+        
+        // Prepare success response
+        response.put("success", true);
+        response.put("message", "Attendance marked successfully!");
+        return ResponseEntity.ok(response);  // Return JSON with success
+    } catch (ValidationException e) {
+        // Prepare error response
+        response.put("success", false);
+        response.put("message", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(response);  // Return error as JSON
     }
+}
 }

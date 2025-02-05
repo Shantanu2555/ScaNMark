@@ -25,4 +25,13 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     boolean existsByFacultyAndLectureTime(Faculty faculty, LocalDateTime lectureTime);
 
+    @Query("SELECT COUNT(l) FROM Lecture l")
+    int countTotalLectures();
+
+    @Query("SELECT DISTINCT l.subjectName FROM Lecture l")
+    List<String> findAllSubjects();
+
+    @Query("SELECT COUNT(l) FROM Lecture l WHERE l.subjectName = :subjectName")
+    int countScheduledLecturesBySubject(@Param("subjectName") String subjectName);
+
 }
