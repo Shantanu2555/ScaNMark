@@ -132,4 +132,11 @@ public class StudentController {
         List<StudentAttendanceDTO> studentAttendanceList = studentService.getAllStudentsAttendance();
         return ResponseEntity.ok(studentAttendanceList);
     }
+
+    @GetMapping("/getName")
+    public ResponseEntity<String> getStudentName(@RequestHeader("Authorization") String token) {
+        String email = jwtProvider.getUsernameFromToken(token.substring(7)); // Extract email from JWT
+        Student student = studentService.getStudentByEmail(email);
+        return ResponseEntity.ok(student.getName()); // Return PRN
+    }
 }
