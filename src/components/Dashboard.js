@@ -2381,6 +2381,14 @@ const [attendanceData, setAttendanceData] = useState({
       });
 
       const data = await response.json();
+      if (!response.ok) {
+        if (data.message.includes("50 meters")) {
+          setAttendanceMessage("❌ You are not within 50 meters of the classroom.");
+        } else {
+          setAttendanceMessage(`❌ Failed: ${data.message || "Unknown error"}`);
+        }
+        return;
+      }
       setAttendanceMessage(data.success ? 
         "✅ Attendance marked successfully!" : 
         `❌ Failed: ${data.error || "Unknown error"}`
@@ -2390,40 +2398,85 @@ const [attendanceData, setAttendanceData] = useState({
     }
   };
 
+  // const renderHome = () => (
+  //   <div className="p-4">
+  //     <h2 className="mb-4">Welcome, {studentName}</h2>
+  //     <div className="row g-4 mb-4">
+  //       <div className="col-md-4">
+  //         <div className="card h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
+  //           <div className="card-body">
+  //             <h5 className="card-title text-muted">Total Lectures</h5>
+  //             <h3 className="card-text text-primary">{attendanceData.totalLectures}</h3>
+  //           </div>
+  //         </div>
+  //       </div>
+  //       <div className="col-md-4">
+  //         <div className="card h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
+  //           <div className="card-body">
+  //             <h5 className="card-title text-muted">Attendance Percentage</h5>
+  //             <h3 className="card-text text-success">
+  //               {attendanceData.attendancePercentage.toFixed(2)}%
+  //             </h3>
+  //           </div>
+  //         </div>
+  //       </div>
+  //       <div className="col-md-4">
+  //         <div className="card h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
+  //           <div className="card-body">
+  //             <h5 className="card-title text-muted">Attended Lectures</h5>
+  //             <h3 className="card-text text-info">{attendanceData.attendedLectures}</h3>
+  //           </div>
+  //         </div>
+  //       </div>
+  //     </div>
+
+  //     {/* Animation Card */}
+  //     <div className="card mt-4" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
+  //       <div className="card-body text-center">
+  //         <Lottie
+  //           loop
+  //           animationData={studentAnimation}
+  //           play
+  //           style={{ width: '300px', height: '300px', margin: '0 auto' }}
+  //         />
+  //       </div>
+  //     </div>
+  //   </div>
+  // );
+
   const renderHome = () => (
-    <div className="p-4">
-      <h2 className="mb-4">Welcome, {studentName}</h2>
+    <div className="container-fluid py-4">
+      <h2 className="mb-4 fw-bold">Welcome, {studentName}</h2>
       <div className="row g-4 mb-4">
         <div className="col-md-4">
-          <div className="card h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
-            <div className="card-body">
-              <h5 className="card-title text-muted">Total Lectures</h5>
-              <h3 className="card-text text-primary">{attendanceData.totalLectures}</h3>
+          <div className="card h-100 shadow-sm border-0" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+            <div className="card-body d-flex flex-column">
+              <h5 className="card-title text-white mb-3">Total Lectures</h5>
+              <h3 className="card-text text-white mb-0 fw-bold">{attendanceData.totalLectures}</h3>
             </div>
           </div>
         </div>
         <div className="col-md-4">
-          <div className="card h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
-            <div className="card-body">
-              <h5 className="card-title text-muted">Attendance Percentage</h5>
-              <h3 className="card-text text-success">
+          <div className="card h-100 shadow-sm border-0" style={{ background: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' }}>
+            <div className="card-body d-flex flex-column">
+              <h5 className="card-title text-dark mb-3">Attendance Percentage</h5>
+              <h3 className="card-text text-dark mb-0 fw-bold">
                 {attendanceData.attendancePercentage.toFixed(2)}%
               </h3>
             </div>
           </div>
         </div>
         <div className="col-md-4">
-          <div className="card h-100" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
-            <div className="card-body">
-              <h5 className="card-title text-muted">Attended Lectures</h5>
-              <h3 className="card-text text-info">{attendanceData.attendedLectures}</h3>
+          <div className="card h-100 shadow-sm border-0" style={{ background: 'linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%)' }}>
+            <div className="card-body d-flex flex-column">
+              <h5 className="card-title text-dark mb-3">Attended Lectures</h5>
+              <h3 className="card-text text-dark mb-0 fw-bold">{attendanceData.attendedLectures}</h3>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Animation Card */}
-      <div className="card mt-4" style={{ backgroundColor: '#f8f9fa', borderRadius: '12px' }}>
+      <div className="card mt-4 shadow-sm border-0" style={{ background: 'linear-gradient(135deg,rgb(223, 207, 239) 0%, #ffd1ff 100%)' }}>
         <div className="card-body text-center">
           <Lottie
             loop
@@ -2565,72 +2618,129 @@ const [attendanceData, setAttendanceData] = useState({
     window.location.href = "/";
   };
 
-  return (
-    <div className="d-flex">
-      {/* Sidebar */}
-      <div 
-        className="sidebar bg-dark"
-        style={{ 
-          width: isMenuCollapsed ? '80px' : '240px',
-          minHeight: '100vh',
-          transition: 'width 0.3s ease'
-        }}
-      >
-        <div className="p-3">
-          <button 
-            className="btn btn-link text-white d-flex align-items-center border-0"
-            onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
-            style={{ textDecoration: 'none' }}
-          >
-            <i className={`fas fa-${isMenuCollapsed ? 'bars' : 'times'} me-2`}></i>
-            {!isMenuCollapsed && <span>ScaNMark</span>}
-          </button>
+//   return (
+//     <div className="d-flex">
+//       {/* Sidebar */}
+//       <div 
+//         className="sidebar bg-dark"
+//         style={{ 
+//           width: isMenuCollapsed ? '80px' : '240px',
+//           minHeight: '100vh',
+//           transition: 'width 0.3s ease'
+//         }}
+//       >
+//         <div className="p-3">
+//           <button 
+//             className="btn btn-link text-white d-flex align-items-center border-0"
+//             onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
+//             style={{ textDecoration: 'none' }}
+//           >
+//             <i className={`fas fa-${isMenuCollapsed ? 'bars' : 'times'} me-2`}></i>
+//             {!isMenuCollapsed && <span>ScaNMark</span>}
+//           </button>
           
-          <div className="nav flex-column mt-4">
+//           <div className="nav flex-column mt-4">
+//             <button 
+//               className={`btn btn-link text-white text-start mb-2 ${selectedPage === 'home' ? 'active' : ''}`}
+//               onClick={() => setSelectedPage('home')}
+//               style={{ textDecoration: 'none' }}
+//             >
+//               <i className="fas fa-home me-2"></i>
+//               {!isMenuCollapsed && 'Home'}
+//             </button>
+//             <button 
+//               className={`btn btn-link text-white text-start mb-2 ${selectedPage === 'scanQRCode' ? 'active' : ''}`}
+//               onClick={() => setSelectedPage('scanQRCode')}
+//               style={{ textDecoration: 'none' }}
+//             >
+//               <i className="fas fa-qrcode me-2"></i>
+//               {!isMenuCollapsed && 'Scan QR Code'}
+//             </button>
+//             <button 
+//               className={`btn btn-link text-white text-start mb-2 ${selectedPage === 'viewAttendance' ? 'active' : ''}`}
+//               onClick={() => setSelectedPage('viewAttendance')}
+//               style={{ textDecoration: 'none' }}
+//             >
+//               <i className="fas fa-chart-pie me-2"></i>
+//               {!isMenuCollapsed && 'View Attendance'}
+//             </button>
+//             <button 
+//             className="btn btn-link text-white text-start mb-2"
+//             onClick={handleLogout}
+//             style={{ textDecoration: 'none' }}
+//             >
+//             <i className="fas fa-sign-out-alt me-2"></i>
+//             {!isMenuCollapsed && 'Logout'}
+//           </button>
+//           </div>
+//         </div>
+//       </div>
+
+//       {/* Main Content */}
+//       <div className="flex-grow-1 bg-white">
+//         {selectedPage === 'home' && renderHome()}
+//         {selectedPage === 'scanQRCode' && renderQRScanner()}
+//         {selectedPage === 'viewAttendance' && renderAttendance()}
+//       </div>
+//     </div>
+//   );
+// };
+
+return (
+  <div className="d-flex h-100">
+    {/* Modern Sidebar */}
+    <div 
+      className={`bg-dark text-white ${isMenuCollapsed ? 'collapsed' : ''}`}
+      style={{ 
+        width: isMenuCollapsed ? '80px' : '240px',
+        minHeight: '100vh',
+        transition: 'width 0.3s ease'
+      }}
+    >
+      <div className="p-3">
+        <button 
+          className="btn btn-link text-white d-flex align-items-center border-0 text-decoration-none w-100"
+          onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
+          style={{backgroundColor:'#4A90E2'}}
+        >
+          <i className={`fas fa-${isMenuCollapsed ? 'bars' : 'times'} me-2`}></i>
+          {!isMenuCollapsed && <span className="fw-bold">ScaNMark</span>}
+        </button>
+        
+        <div className="nav flex-column mt-4">
+          {[
+            { id: 'home', icon: 'home', label: 'Home' },
+            { id: 'scanQRCode', icon: 'qrcode', label: 'Scan QR Code' },
+            { id: 'viewAttendance', icon: 'chart-pie', label: 'View Attendance' }
+          ].map(item => (
             <button 
-              className={`btn btn-link text-white text-start mb-2 ${selectedPage === 'home' ? 'active' : ''}`}
-              onClick={() => setSelectedPage('home')}
-              style={{ textDecoration: 'none' }}
+              key={item.id}
+              className={`btn btn-link text-white text-start mb-2 text-decoration-none ${selectedPage === item.id ? 'active bg-primary bg-opacity-25' : ''}`}
+              onClick={() => setSelectedPage(item.id)}
             >
-              <i className="fas fa-home me-2"></i>
-              {!isMenuCollapsed && 'Home'}
+              <i className={`fas fa-${item.icon} me-2`}></i>
+              {!isMenuCollapsed && item.label}
             </button>
-            <button 
-              className={`btn btn-link text-white text-start mb-2 ${selectedPage === 'scanQRCode' ? 'active' : ''}`}
-              onClick={() => setSelectedPage('scanQRCode')}
-              style={{ textDecoration: 'none' }}
-            >
-              <i className="fas fa-qrcode me-2"></i>
-              {!isMenuCollapsed && 'Scan QR Code'}
-            </button>
-            <button 
-              className={`btn btn-link text-white text-start mb-2 ${selectedPage === 'viewAttendance' ? 'active' : ''}`}
-              onClick={() => setSelectedPage('viewAttendance')}
-              style={{ textDecoration: 'none' }}
-            >
-              <i className="fas fa-chart-pie me-2"></i>
-              {!isMenuCollapsed && 'View Attendance'}
-            </button>
-            <button 
-            className="btn btn-link text-white text-start mb-2"
+          ))}
+          <button 
+            className="btn btn-link text-white text-start mb-2 text-decoration-none"
             onClick={handleLogout}
-            style={{ textDecoration: 'none' }}
-            >
+          >
             <i className="fas fa-sign-out-alt me-2"></i>
             {!isMenuCollapsed && 'Logout'}
           </button>
-          </div>
         </div>
       </div>
-
-      {/* Main Content */}
-      <div className="flex-grow-1 bg-white">
-        {selectedPage === 'home' && renderHome()}
-        {selectedPage === 'scanQRCode' && renderQRScanner()}
-        {selectedPage === 'viewAttendance' && renderAttendance()}
-      </div>
     </div>
-  );
+
+    {/* Main Content Area */}
+    <div className="flex-grow-1 bg-light">
+      {selectedPage === 'home' && renderHome()}
+      {selectedPage === 'scanQRCode' && renderQRScanner()}
+      {selectedPage === 'viewAttendance' && renderAttendance()}
+    </div>
+  </div>
+);
 };
 
 export default Dashboard;

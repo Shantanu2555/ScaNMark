@@ -12,7 +12,7 @@ code {
     monospace;
 }
 
-.icon {
+ .icon {
   vertical-align: middle;
   line-height: 1px;
   font-size: 20px;
@@ -110,18 +110,11 @@ code {
 .sidebar-responsive {
   display: inline !important;
   position: absolute;
-  /*
-    we want the z-index of the sidebar higher so that
-    the charts are not showing over the sidebar 
-    on small screens
-  */
+ 
   z-index: 12 !important;
 }
 
-/* End Sidebar  */
 
-
-/* Main  */  
 .main-container {
   grid-area: main;
   overflow-y: auto;
@@ -183,10 +176,6 @@ code {
   height: 300px;
 }
 
-/* End Main  */
-
-
-/* Medium <= 992px */
   
 @media screen and (max-width: 992px) {
   .grid-container {
@@ -261,9 +250,7 @@ code {
     border-radius: 5px;
     cursor: pointer;
   }
-  /* button:hover {
-    background: #45a049;
-  } */
+  
   .chart-container {
     margin-top: 20px;
   }
@@ -293,4 +280,4 @@ code {
   h3 {
     color: green;
   }
-  
+

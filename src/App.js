@@ -8,7 +8,6 @@ import StudentSignin from './components/StudentSignin';
 import VerifyOtp from './components/VerifyOtp';
 import Dashboard from './components/Dashboard';
 import VerifyFacultyOtp from './components/VerifyFacultyOtp';
-import Faculty from './components/Faculty';
 import { CssBaseline, Container } from "@mui/material";
 import Attendance from './pages/Attendance';
 import Home from './pages/Home';
@@ -17,6 +16,9 @@ import "bootstrap/dist/css/bootstrap.min.css";
 import VerifyCOtp from './components/VerifyCOtp';
 import ForgotPassword from './components/ForgotPassword';
 import ResetPassword from './components/ResetPassword';
+import Layout from './components/Layout';
+import FacultyDashboard from './components/FacultyDashboard';
+
 
 
 
@@ -35,9 +37,9 @@ const App = () => (
       <Route path="/verify-otp" element={<VerifyOtp />} />
       <Route path="/verifyfaculty-otp" element={<VerifyFacultyOtp />} />
       <Route path="/cverify-otp" element={<VerifyCOtp />} />
-      <Route path="/coordinator" element={<Coordinator />} />
+      <Route path="/coordinator" element={<Layout />} />
       {/* <Route path="/student-dashboard" element={<Dashboard />} /> */}
-      <Route path="/Faculty" element={<Faculty />} />
+      <Route path="/Faculty" element={<FacultyDashboard />} />
       <Route path="/success" element={<SuccessPage />} />
       {/* <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} /> */}
