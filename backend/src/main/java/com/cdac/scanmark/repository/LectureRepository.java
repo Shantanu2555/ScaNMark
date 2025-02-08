@@ -33,4 +33,8 @@ public interface LectureRepository extends JpaRepository<Lecture, Long> {
 
     @Query("SELECT COUNT(l) FROM Lecture l WHERE l.subjectName = :subjectName")
     int countScheduledLecturesBySubject(@Param("subjectName") String subjectName);
+
+    @Query("SELECT l FROM Lecture l WHERE l.faculty = :faculty AND l.id NOT IN (SELECT q.lecture.id FROM QRData q)")
+    List<Lecture> findFreshLecturesByFaculty(@Param("faculty") Faculty faculty);
+
 }

@@ -54,22 +54,14 @@ public class LectureController {
         return ResponseEntity.noContent().build();
     }
 
-    //getting list of lectures by faculty name
+    // getting list of lectures by faculty name
     @GetMapping("/lectures")
-    public ResponseEntity<List<Lecture>> getLecturesByFacultyName(@RequestHeader("Authorization") String token, 
-    @RequestParam String facultyName) {
+    public ResponseEntity<List<Lecture>> getLecturesByFacultyName(@RequestHeader("Authorization") String token,
+            @RequestParam String facultyName) {
         try {
-            System.out.println("Fetching faculty with name: " + facultyName);
-            Faculty faculty = facultyRepository.findByName(facultyName)
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Faculty not found"));
+            List<Lecture> lectures = lectureService.getFreshLecturesByFaculty(facultyName);
 
-            System.out.println("Faculty found: " + faculty);
-
-            List<Lecture> lectures = lectureRepository.findByFaculty(faculty);
-
-            System.out.println("Lectures fetched: " + lectures);
             if (lectures.isEmpty()) {
-                System.out.println("lectures list empty");
                 return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
             }
             return ResponseEntity.ok(lectures);

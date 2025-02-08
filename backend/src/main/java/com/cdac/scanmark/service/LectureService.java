@@ -14,4 +14,6 @@ public interface LectureService {
     List<Lecture> getAllLectures();
 
     void deleteLecture(Long id);
+
+    List<Lecture> getFreshLecturesByFaculty(String facultyName) ;
 }

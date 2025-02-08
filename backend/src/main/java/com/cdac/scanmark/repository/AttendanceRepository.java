@@ -51,4 +51,6 @@ public interface AttendanceRepository extends JpaRepository<Attendance, Long> {
         @Query("SELECT COUNT(a) FROM Attendance a WHERE a.studentPrn = :prn AND a.isPresent = true")
         int countAttendedLectures(@Param("prn") Long prn);
 
+        boolean existsByStudentPrnAndLectureId(Long studentPrn, Long lectureId);
+
 }

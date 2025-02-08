@@ -93,8 +93,15 @@ public class AttendanceServiceImpl implements AttendanceService {
 
     @Override
     public void markAttendance(AttendanceRequest request) {
-        // Extract lectureId from QR content
+
         Long lectureId = request.getLectureId();
+        Long studentPrn = request.getStudentPrn();
+    
+        // Check if attendance is already marked
+        boolean alreadyMarked = attendanceRepository.existsByStudentPrnAndLectureId(studentPrn, lectureId);
+        if (alreadyMarked) {
+            throw new ValidationException("Attendance already marked for this lecture.");
+        }
 
         // Fetch student
         Student student = studentRepository.findByPrn(request.getStudentPrn())
@@ -176,24 +183,24 @@ public class AttendanceServiceImpl implements AttendanceService {
         double c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
         double distance = EARTH_RADIUS * c * 1000; // Convert to meters
 
-        return distance <= 50; // Return true if within 50 meters
+        return distance <= 100; // Return true if within 100 meters
     }
 
     @Override
-    public List<Attendance> getAttendanceByPrn(Long prn){
-        List<Attendance> attendanceList = attendanceRepository.findByStudentPrn(prn) ;
-        return attendanceList ;
+    public List<Attendance> getAttendanceByPrn(Long prn) {
+        List<Attendance> attendanceList = attendanceRepository.findByStudentPrn(prn);
+        return attendanceList;
     }
 
     @Override
-    public List<Attendance> getAttendanceByStudentName(String name){
-        List<Attendance> attendanceList = attendanceRepository.findByStudentName(name) ;
-        return attendanceList ;
+    public List<Attendance> getAttendanceByStudentName(String name) {
+        List<Attendance> attendanceList = attendanceRepository.findByStudentName(name);
+        return attendanceList;
     }
 
     @Override
-    public List<Attendance> getTodaysAttendance(){
-        return attendanceRepository.findByLectureDate(LocalDate.now()) ;
+    public List<Attendance> getTodaysAttendance() {
+        return attendanceRepository.findByLectureDate(LocalDate.now());
     }
 
     @Override
@@ -201,7 +208,7 @@ public class AttendanceServiceImpl implements AttendanceService {
         YearMonth currentMonth = YearMonth.now();
         LocalDate startOfMonth = currentMonth.atDay(1);
         LocalDate endOfMonth = currentMonth.atEndOfMonth();
-        
+
         return attendanceRepository.findByMonth(startOfMonth, endOfMonth);
     }
 
