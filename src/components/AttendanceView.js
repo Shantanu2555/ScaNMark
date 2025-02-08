@@ -619,6 +619,8 @@
 
 import React, { useState, useEffect } from 'react';
 import { ResponsiveContainer, PieChart, Pie, Cell, Tooltip } from 'recharts';
+import Lottie from 'react-lottie-player';
+import studentAnimation from '../animations/scan.json';
 
 const AttendanceView = ({ studentPrn }) => {
   const [subjectAttendance, setSubjectAttendance] = useState([]);
@@ -675,13 +677,19 @@ const AttendanceView = ({ studentPrn }) => {
     return (
       <div className="text-center p-4">
         Loading attendance data...
+        <Lottie
+            loop
+            animationData={studentAnimation}
+            play
+            style={{ width: '300px', height: '300px', margin: '0 auto' }}
+          />
       </div>
     );
   }
 
   return (
     <div className="p-4">
-      <h4 className="mb-4 text-center">Subject-wise Attendance Dashboard</h4>
+      <h4 className="mb-4 text-center">Subject-wise Attendance</h4>
       
       <div className="row g-4">
         {subjectAttendance.map((subject) => (

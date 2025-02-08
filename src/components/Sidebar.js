@@ -17,11 +17,11 @@ const Sidebar = ({ onMenuClick }) => {
           <i className="bi bi-calendar-check"></i> <span>Classes</span>
         </li>
         <li className="sidebar-item" onClick={() => onMenuClick("students")}>
-          <i className="bi bi-people"></i> <span>Students</span>
+          <i className="bi bi-people"></i> <span>Attendance Report</span>
         </li>
-        <li className="sidebar-item" onClick={() => onMenuClick("faculty")}>
+        {/* <li className="sidebar-item" onClick={() => onMenuClick("faculty")}>
           <i className="bi bi-person-badge"></i> <span>Faculty</span>
-        </li>
+        </li> */}
         <li className="sidebar-item" onClick={() => onMenuClick("studentModifyPage")}>
           <i className="bi bi-pencil-square"></i> <span>Student - Modify</span>
         </li>

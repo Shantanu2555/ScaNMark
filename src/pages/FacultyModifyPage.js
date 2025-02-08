@@ -1121,7 +1121,13 @@ function FacultyModifyPage() {
 
   const handleEditFaculty = (facultyCode) => {
     const faculty = faculties.find((fac) => fac.facultyCode === facultyCode);
-    setFormData(faculty);
+    //setFormData(faculty);
+    setFormData({
+      facultyCode: faculty.facultyCode,
+      name: faculty.name,
+      email: faculty.email,
+      dept: faculty.department // Map department to dept
+    });
     setEditingFacultyCode(facultyCode);
   };
 
@@ -1173,6 +1179,11 @@ function FacultyModifyPage() {
     }
   };
 
+  const clearForm = () => {
+    setFormData({ facultyCode: "", name: "", email: "" ,dept:""});
+    setEditingFacultyCode(null);
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -1195,7 +1206,7 @@ function FacultyModifyPage() {
               <input
                 type="text"
                 name="facultyCode"
-                placeholder="E.g., F012"
+                placeholder="F012"
                 value={formData.facultyCode}
                 onChange={handleInputChange}
                 disabled={!!editingFacultyCode}
@@ -1206,7 +1217,7 @@ function FacultyModifyPage() {
               <input
                 type="text"
                 name="name"
-                placeholder="E.g., Dr. Jane Doe"
+                placeholder="Dr. Jane Doe"
                 value={formData.name}
                 onChange={handleInputChange}
               />
@@ -1216,7 +1227,7 @@ function FacultyModifyPage() {
               <input
                 type="email"
                 name="email"
-                placeholder="E.g., jane@univ.com"
+                placeholder="jane@univ.com"
                 value={formData.email}
                 onChange={handleInputChange}
               />
@@ -1226,20 +1237,30 @@ function FacultyModifyPage() {
               <input
                 type="text"
                 name="dept"
-                placeholder="E.g., Biology"
+                placeholder="DAC"
                 value={formData.dept}
                 onChange={handleInputChange}
               />
             </div>
             <div className="form-actions">
               {editingFacultyCode ? (
+                <>
                 <button type="button" className="save-btn" onClick={handleSaveFaculty}>
                   Save Changes
                 </button>
+                <button type="button" className="clear-btn" onClick={clearForm}>
+                Clear
+              </button>
+              </>
               ) : (
+                <>
                 <button type="button" className="add-btn" onClick={handleAddFaculty}>
                   Add Faculty
                 </button>
+                <button type="button" className="clear-btn" onClick={clearForm}>
+                Clear
+              </button>
+                </>
               )}
             </div>
           </form>

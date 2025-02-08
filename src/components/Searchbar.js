@@ -77,7 +77,7 @@
 
 
 
-import { useState } from "react"
+import { useState,useEffect } from "react"
 import "bootstrap/dist/css/bootstrap.min.css"
 
 const SearchBar = ({ onSearch, onNavigate }) => {
@@ -88,6 +88,36 @@ const SearchBar = ({ onSearch, onNavigate }) => {
     e.preventDefault()
     onSearch(query) 
   }
+   const [profileData, setProfileData] = useState({
+      name: "",
+      email: ""
+    });
+
+    useEffect(() => {
+        const token = localStorage.getItem("studentToken");
+        const fetchProfileData = async () => {
+          try {
+            const response = await fetch("http://localhost:8081/api/coordinators/profile",
+              {
+                method: "GET",
+            headers: {
+              "Content-Type": "application/json",
+              "Authorization": `Bearer ${token}`,
+            }
+              }
+            );
+            if (!response.ok) {
+              throw new Error("Failed to fetch profile data");
+            }
+            const data = await response.json();
+            setProfileData(data);
+          } catch (error) {
+            console.error("Error fetching profile data:", error);
+          }
+        };
+    
+        fetchProfileData();
+      }, []);
 
   return (
     <div>
@@ -101,7 +131,7 @@ const SearchBar = ({ onSearch, onNavigate }) => {
               style={{ width: "40px", height: "40px", cursor: "pointer" }}
               onClick={() => setShowProfile(!showProfile)}
             />
-            <span className="profile_name">Swati Salunkhe</span>
+            <span className="profile_name">{profileData.name}</span>
           </div>
           <div className="d-flex">
             <form className="d-flex" role="search" onSubmit={handleSearch}>
@@ -119,12 +149,12 @@ const SearchBar = ({ onSearch, onNavigate }) => {
             </form>
           </div>
           <div className="ms-auto">
-            <button className="btn btn-primary me-2" onClick={() => onNavigate("students")}>
+            {/* <button className="btn btn-primary me-2" onClick={() => onNavigate("students")}>
               Students
             </button>
             <button className="btn btn-secondary me-2" onClick={() => onNavigate("faculty")}>
               Faculty
-            </button>
+            </button> */}
           </div>
         </div>
       </nav>

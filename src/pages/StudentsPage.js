@@ -19,31 +19,123 @@ const StudentsPage = ({ searchQuery = "" }) => {
   const [error, setError] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
+   const [studentPrn, setStudentPrn] = useState(null);
+  const [attendanceData, setAttendanceData] = useState({
+    attendedLectures: 0,
+    totalLectures: 0,
+    attendancePercentage: 0
+  });
+
+  // useEffect(() => {
+  //   const fetchStudents = async () => {
+  //     try {
+  //       const response = await fetch("http://localhost:8081/api/students/attendance-summary", {
+  //         headers: {
+  //           Authorization: `Bearer ${localStorage.getItem("studentToken")}`, // Replace with actual token if needed
+  //         },
+  //       });
+
+  //       if (!response.ok) {
+  //         throw new Error("Failed to fetch student attendance data");
+  //       }
+
+  //       const data = await response.json();
+  //       setStudents(data);
+  //     } catch (error) {
+  //       setError(error.message);
+  //     } finally {
+  //       setLoading(false);
+  //     }
+  //   };
+  //   fetchStudents();
+  // }, []);
 
   useEffect(() => {
     const fetchStudents = async () => {
       try {
         const response = await fetch("http://localhost:8081/api/students/attendance-summary", {
           headers: {
-            Authorization: `Bearer ${localStorage.getItem("studentToken")}`, // Replace with actual token if needed
+            Authorization: `Bearer ${localStorage.getItem("studentToken")}`,
           },
         });
-
+  
         if (!response.ok) {
           throw new Error("Failed to fetch student attendance data");
         }
-
+  
         const data = await response.json();
-        setStudents(data);
+        // For each student, fetch their detailed attendance data
+        const studentsWithAttendance = await Promise.all(
+          data.map(async (student) => {
+            const attendanceResponse = await fetch(
+              `http://localhost:8081/api/students/${student.prn}/attendance-percentage`
+            );
+            const attendanceData = await attendanceResponse.json();
+            return {
+              ...student,
+              attendedLectures: attendanceData.attendedLectures,
+              totalLectures: attendanceData.totalLectures,
+              attendancePercentage:attendanceData.attendancePercentage
+            };
+          })
+        );
+        setStudents(studentsWithAttendance);
       } catch (error) {
         setError(error.message);
       } finally {
         setLoading(false);
       }
     };
-
     fetchStudents();
   }, []);
+
+  
+
+  const fetchStudentPrn = async () => {
+    const token = localStorage.getItem("studentToken");
+    if (!token) {
+      console.error("❌ No authentication token found");
+      return;
+    }
+    try {
+      const response = await fetch("http://localhost:8081/api/students/get-prn-through-token", {
+        headers: {
+          "Authorization": `Bearer ${token}`,
+        },
+      });
+      if (!response.ok) throw new Error("Failed to fetch PRN");
+      const prn = await response.json();
+      setStudentPrn(prn);
+    } catch (error) {
+      console.error("❌ Error fetching PRN:", error);
+    }
+  };
+
+  const fetchAttendanceData = async () => {
+    //const token = localStorage.getItem("studentToken");
+    //if (!token || !studentPrn) return;
+  
+    try {
+      const response = await fetch(`http://localhost:8081/api/students/${studentPrn}/attendance-percentage`, {
+        headers: {
+          //"Authorization": `Bearer ${token}`,
+        },
+      });
+      
+      if (!response.ok) throw new Error("Failed to fetch attendance");
+      const attendanceStats = await response.json();
+  
+      // Update state with attendance data
+      setAttendanceData({
+        attendedLectures: attendanceStats.attendedLectures,
+        totalLectures: attendanceStats.totalLectures,
+        attendancePercentage: attendanceStats.attendancePercentage
+      });
+  
+    } catch (error) {
+      console.error("❌ Error fetching attendance:", error);
+    }
+  };
 
   const filteredStudents = useMemo(() => {
     return students.filter((student) =>
@@ -85,7 +177,8 @@ const StudentsPage = ({ searchQuery = "" }) => {
             <TableRow className="table-header">
               <TableCell>PRN</TableCell>
               <TableCell>Name</TableCell>
-              <TableCell>Today's Attendance</TableCell>
+              <TableCell>Attended Lectures</TableCell>
+              <TableCell>Total Lectures</TableCell>
               <TableCell>Overall Attendance</TableCell>
             </TableRow>
           </TableHead>
@@ -103,10 +196,16 @@ const StudentsPage = ({ searchQuery = "" }) => {
                   <TableRow key={student.prn} className="table-row">
                     <TableCell>{student.prn}</TableCell>
                     <TableCell>{student.name}</TableCell>
-                    <TableCell className={student.todayAttendance === "present" ? "present" : "absent"}>
+                    {/* <TableCell className={student.todayAttendance === "present" ? "present" : "absent"}>
                       {student.todayAttendance}
+                    </TableCell> */}
+                    <TableCell>
+                    {student.attendedLectures || 0}
                     </TableCell>
-                    <TableCell>{student.overallAttendance.toFixed(2)}%</TableCell>
+                    <TableCell>
+                    {student.totalLectures || 0}
+                    </TableCell>
+                    <TableCell>{student.attendancePercentage.toFixed(2)}%</TableCell>
                   </TableRow>
                 ))
             )}

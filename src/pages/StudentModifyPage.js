@@ -2261,6 +2261,11 @@ function StudentModifyPage() {
     }
   };
 
+  const clearForm = () => {
+    setFormData({ prn: "", name: "", email: "" });
+    setEditingPrn(null);
+  };
+
   const handleChangePage = (event, newPage) => {
     setPage(newPage);
   };
@@ -2283,7 +2288,7 @@ function StudentModifyPage() {
               <input
                 type="text"
                 name="prn"
-                placeholder="E.g., 101"
+                placeholder="240840120101"
                 value={formData.prn}
                 onChange={handleInputChange}
                 disabled={!!editingPrn}
@@ -2294,7 +2299,7 @@ function StudentModifyPage() {
               <input
                 type="text"
                 name="name"
-                placeholder="E.g., Alice Johnson"
+                placeholder="Alice Johnson"
                 value={formData.name}
                 onChange={handleInputChange}
               />
@@ -2304,20 +2309,30 @@ function StudentModifyPage() {
               <input
                 type="email"
                 name="email"
-                placeholder="E.g., alice@example.com"
+                placeholder="alice@example.com"
                 value={formData.email}
                 onChange={handleInputChange}
               />
             </div>
             <div className="form-actions">
               {editingPrn ? (
+                <>
                 <button type="button" className="save-btn" onClick={handleSaveStudent}>
                   Save Changes
                 </button>
+                <button type="button" className="clear-btn" onClick={clearForm}>
+                Clear
+              </button>
+                </>
               ) : (
+                <>
                 <button type="button" className="add-btn" onClick={handleAddStudent}>
                   Add Student
                 </button>
+                <button type="button" className="clear-btn" onClick={clearForm}>
+                    Clear 
+                  </button>
+                </>
               )}
             </div>
           </form>

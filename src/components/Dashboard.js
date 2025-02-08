@@ -2451,17 +2451,17 @@ const [attendanceData, setAttendanceData] = useState({
         <div className="col-md-4">
           <div className="card h-100 shadow-sm border-0" style={{ background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
             <div className="card-body d-flex flex-column">
-              <h5 className="card-title text-white mb-3">Total Lectures</h5>
-              <h3 className="card-text text-white mb-0 fw-bold">{attendanceData.totalLectures}</h3>
+              <h5 className="card-title text-white mb-3">Attended Lectures</h5>
+              <h3 className="card-text text-white mb-0 fw-bold">{attendanceData.attendedLectures}</h3>
             </div>
           </div>
         </div>
         <div className="col-md-4">
           <div className="card h-100 shadow-sm border-0" style={{ background: 'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)' }}>
             <div className="card-body d-flex flex-column">
-              <h5 className="card-title text-dark mb-3">Attendance Percentage</h5>
+              <h5 className="card-title text-dark mb-3">Total Lectures</h5>
               <h3 className="card-text text-dark mb-0 fw-bold">
-                {attendanceData.attendancePercentage.toFixed(2)}%
+                {attendanceData.totalLectures}
               </h3>
             </div>
           </div>
@@ -2469,21 +2469,22 @@ const [attendanceData, setAttendanceData] = useState({
         <div className="col-md-4">
           <div className="card h-100 shadow-sm border-0" style={{ background: 'linear-gradient(135deg, #fad0c4 0%, #ffd1ff 100%)' }}>
             <div className="card-body d-flex flex-column">
-              <h5 className="card-title text-dark mb-3">Attended Lectures</h5>
-              <h3 className="card-text text-dark mb-0 fw-bold">{attendanceData.attendedLectures}</h3>
+              <h5 className="card-title text-dark mb-3">Attended Percentage</h5>
+              <h3 className="card-text text-dark mb-0 fw-bold">{attendanceData.attendancePercentage.toFixed(2)}%</h3>
             </div>
           </div>
         </div>
       </div>
 
-      <div className="card mt-4 shadow-sm border-0" style={{ background: 'linear-gradient(135deg,rgb(223, 207, 239) 0%, #ffd1ff 100%)' }}>
+      <div className="card mt-4 shadow-sm border-0" style={{ backgroundColor: '#f8fafd' }}>
         <div className="card-body text-center">
-          <Lottie
+          {/*<Lottie
             loop
             animationData={studentAnimation}
             play
             style={{ width: '300px', height: '300px', margin: '0 auto' }}
-          />
+          />*/}
+          <AttendanceView studentPrn={studentPrn} />
         </div>
       </div>
     </div>
@@ -2701,7 +2702,7 @@ return (
         <button 
           className="btn btn-link text-white d-flex align-items-center border-0 text-decoration-none w-100"
           onClick={() => setIsMenuCollapsed(!isMenuCollapsed)}
-          style={{backgroundColor:'#4A90E2'}}
+          style={{backgroundColor:'#143864'}}
         >
           <i className={`fas fa-${isMenuCollapsed ? 'bars' : 'times'} me-2`}></i>
           {!isMenuCollapsed && <span className="fw-bold">ScaNMark</span>}
@@ -2711,12 +2712,15 @@ return (
           {[
             { id: 'home', icon: 'home', label: 'Home' },
             { id: 'scanQRCode', icon: 'qrcode', label: 'Scan QR Code' },
-            { id: 'viewAttendance', icon: 'chart-pie', label: 'View Attendance' }
+            // { id: 'viewAttendance', icon: 'chart-pie', label: 'View Attendance' }
           ].map(item => (
             <button 
               key={item.id}
-              className={`btn btn-link text-white text-start mb-2 text-decoration-none ${selectedPage === item.id ? 'active bg-primary bg-opacity-25' : ''}`}
+              className={`btn btn-link text-white text-start mb-2 text-decoration-none ${selectedPage === item.id ? 'active' : ''}`}
               onClick={() => setSelectedPage(item.id)}
+              style={{
+                backgroundColor: selectedPage === item.id ? '#6c757d' : '#143864'
+              }}
             >
               <i className={`fas fa-${item.icon} me-2`}></i>
               {!isMenuCollapsed && item.label}
@@ -2725,6 +2729,7 @@ return (
           <button 
             className="btn btn-link text-white text-start mb-2 text-decoration-none"
             onClick={handleLogout}
+            style={{backgroundColor:'#143864'}}
           >
             <i className="fas fa-sign-out-alt me-2"></i>
             {!isMenuCollapsed && 'Logout'}
